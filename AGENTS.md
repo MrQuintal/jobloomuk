@@ -16,3 +16,4 @@
 - Tunable business values go in `platform_settings` / `feature_flags`, not code — owner can change them without a deploy.
 - Signed-in pages live under `src/routes/_authenticated/`; `RoleGate` is UI-only, RLS is the real guard.
 - Shared marketing layout is `PageShell`/`ContentPage` in `src/components/site/`; app layout is `AppShell` — keeps pages consistent.
+- Payments: subscription state comes only from the signed payments webhook into public.subscriptions; plan tier is derived in src/lib/rules/plans.ts — client never decides access.

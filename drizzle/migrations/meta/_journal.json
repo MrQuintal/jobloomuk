@@ -15,6 +15,13 @@
       "when": 1792164675119,
       "tag": "0001_reputation_reports_notifications_privacy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792166256843,
+      "tag": "0002_subscriptions",
+      "breakpoints": true
     }
   ]
 }

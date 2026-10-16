@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { formatPence, PLAN_FEATURES, PRICES_PENCE } from "@/lib/rules/plans";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,20 +30,26 @@ function Pricing() {
       intro="Subscriptions pay for profile and business features only. They never buy better reviews, fake badges or guaranteed jobs."
     >
       <div className="grid gap-6 md:grid-cols-3">
-        {plans.map((p, i) => (
-          <div key={p.id} className={`flex flex-col rounded-3xl border p-8 ${i === 1 ? "border-forest bg-forest text-forest-foreground" : "border-border bg-card"}`}>
-            <h2 className="text-2xl font-medium">{p.name}</h2>
-            <p className={`mt-1 text-sm ${i === 1 ? "text-forest-foreground/70" : "text-muted-foreground"}`}>{p.description}</p>
-            <p className="mt-6 font-display text-3xl">{p.slug === "free" ? "Free" : "Price coming soon"}</p>
-            <ul className="mt-6 flex flex-col gap-2 text-sm">
-              {(p.features as string[]).map((f) => (
-                <li key={f} className="flex gap-2"><Check className="size-4 shrink-0 text-bloom" />{f}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        {plans.map((p, i) => {
+          const paid = p.slug === "pro" || p.slug === "business" ? (p.slug as "pro" | "business") : null;
+          const features = paid ? PLAN_FEATURES[paid].features : (p.features as string[]);
+          return (
+            <div key={p.id} className={`flex flex-col rounded-3xl border p-8 ${i === 1 ? "border-forest bg-forest text-forest-foreground" : "border-border bg-card"}`}>
+              <h2 className="text-2xl font-medium">{p.name}</h2>
+              <p className={`mt-1 text-sm ${i === 1 ? "text-forest-foreground/70" : "text-muted-foreground"}`}>{paid ? PLAN_FEATURES[paid].tagline : p.description}</p>
+              <p className="mt-6 font-display text-3xl">{paid ? `${formatPence(PRICES_PENCE[paid].month)}/month` : "Free"}</p>
+              {paid && <p className={`text-sm ${i === 1 ? "text-forest-foreground/70" : "text-muted-foreground"}`}>or {formatPence(PRICES_PENCE[paid].year)}/year — 2 months free</p>}
+              <ul className="mt-6 flex flex-col gap-2 text-sm">
+                {features.map((f) => (
+                  <li key={f} className="flex gap-2"><Check className="size-4 shrink-0 text-bloom" />{f}</li>
+                ))}
+              </ul>
+              {paid && <Link to="/billing" className="mt-6 rounded-full bg-bloom px-4 py-2 text-center text-sm font-medium text-bloom-foreground">Choose {p.name}</Link>}
+            </div>
+          );
+        })}
       </div>
-      <p className="mt-8 text-sm text-muted-foreground">Paid plans aren't available yet — billing launches in a later phase.</p>
+      <p className="mt-8 text-sm text-muted-foreground">Prices include VAT where applicable. Cancel any time — you keep paid features until the end of the period you paid for. Plan features are rolling out in stages.</p>
     </ContentPage>
   );
 }

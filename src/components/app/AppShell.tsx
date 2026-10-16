@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { LayoutDashboard, Hammer, Users, ScrollText, LogOut, ClipboardList, Search, MessageSquare, Bell, ShieldCheck, Settings, UserCog } from "lucide-react";
+import { LayoutDashboard, Hammer, Users, ScrollText, LogOut, ClipboardList, Search, MessageSquare, Bell, ShieldCheck, Settings, UserCog , CreditCard } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
@@ -21,6 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     roles.includes("customer") && { to: "/customer", label: "My jobs", icon: ClipboardList },
     roles.includes("worker") && { to: "/worker", label: "My business", icon: Hammer },
     roles.includes("worker") && { to: "/jobs", label: "Find jobs", icon: Search },
+    roles.includes("worker") && { to: "/billing", label: "Plan & billing", icon: CreditCard },
     (roles.includes("customer") || roles.includes("worker")) && { to: "/messages", label: "Messages", icon: MessageSquare },
     { to: "/notifications", label: unread ? `Notifications (${unread})` : "Notifications", icon: Bell },
     { to: "/account", label: "Account & privacy", icon: UserCog },
@@ -28,7 +29,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     (isAdmin(roles) || roles.includes("moderator")) && { to: "/admin/moderation", label: "Moderation", icon: ShieldCheck },
     isAdmin(roles) && { to: "/admin/users", label: "Users", icon: Users },
     isAdmin(roles) && { to: "/admin/audit", label: "Audit log", icon: ScrollText },
-  ].filter(Boolean) as { to: "/customer" | "/worker" | "/jobs" | "/messages" | "/notifications" | "/account" | "/admin/settings" | "/admin/moderation" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard }[];
+  ].filter(Boolean) as { to: "/customer" | "/worker" | "/billing" | "/jobs" | "/messages" | "/notifications" | "/account" | "/admin/settings" | "/admin/moderation" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard }[];
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
