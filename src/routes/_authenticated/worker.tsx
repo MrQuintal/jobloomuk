@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { isValidVideoUrl } from "@/lib/rules/media";
 import { Trash2 } from "lucide-react";
 import { PageTitle } from "@/components/app/AppShell";
 import { RoleGate } from "@/components/app/RoleGate";
