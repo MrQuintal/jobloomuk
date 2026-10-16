@@ -1,7 +1,9 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { MapPin } from "lucide-react";
+import { Download, MapPin } from "lucide-react";
+import { ServiceAreaMap } from "@/components/app/ServiceAreaMap";
+import { videoEmbedUrl } from "@/lib/rules/media";
 import { toast } from "sonner";
 import { PageShell } from "@/components/site/PageShell";
 import { Button } from "@/components/ui/button";
@@ -46,10 +48,11 @@ function Pro() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(proQ(slug));
   if (!data) return null;
-  const { pro, projects, slots, reviews, summary, team } = data;
+  const { pro, projects, slots, reviews, summary, team, bannerUrl, branches } = data;
   useEffect(() => { void supabase.from("profile_events").insert({ worker_id: pro.user_id, kind: "view" }); }, [pro.user_id]);
   return (
     <PageShell>
+      {bannerUrl && <img src={bannerUrl} alt={`${pro.business_name} banner`} className="h-48 w-full object-cover md:h-72" />}
       <section className="container-page grid gap-10 py-14 md:grid-cols-[1fr_22rem]">
         <div>
           <p className="eyebrow">{pro.worker_specialisms.map((s) => s.categories?.name).filter(Boolean).join(" · ")}</p>
@@ -86,6 +89,9 @@ function Pro() {
                       {p.images.map((u) => <img key={u} src={u} alt={p.title} loading="lazy" className="aspect-[4/3] w-full rounded-lg object-cover" />)}
                     </div>
                   )}
+                  {p.video_url && videoEmbedUrl(p.video_url) && (
+                    <iframe title={`${p.title} video`} src={videoEmbedUrl(p.video_url)!} className="mb-4 aspect-video w-full rounded-lg print:hidden" loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen />
+                  )}
                   <h3 className="text-lg font-medium">{p.title}</h3>
                   <p className="text-sm text-muted-foreground">{[p.location_text, p.completed_on && new Date(p.completed_on).toLocaleDateString("en-GB", { month: "long", year: "numeric" })].filter(Boolean).join(" · ")}</p>
                   {p.description && <p className="mt-2 text-sm">{p.description}</p>}
@@ -113,7 +119,7 @@ function Pro() {
             </ul>
           )}
         </div>
-        <aside className="space-y-6">
+        <aside className="space-y-6 print:hidden">
           <ContactBox workerId={pro.user_id} name={pro.business_name} />
           <div className="rounded-2xl border border-border bg-card p-5">
             <h2 className="font-medium">Usual availability</h2>
@@ -121,6 +127,14 @@ function Pro() {
               <ul className="mt-2 space-y-1 text-sm">{slots.map((s, i) => <li key={i}>{WEEKDAYS[s.weekday]} {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}</li>)}</ul>
             )}
           </div>
+          {pro.base_area && <ServiceAreaMap area={pro.base_area} radiusMiles={pro.travel_radius_miles} />}
+          {branches.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h2 className="font-medium">Branches</h2>
+              <ul className="mt-2 space-y-2 text-sm">{branches.map((b) => <li key={b.id}><strong>{b.name}</strong> · {b.area}{b.phone ? ` · ${b.phone}` : ""}</li>)}</ul>
+            </div>
+          )}
+          <Button variant="outline" className="w-full" onClick={() => window.print()}><Download /> Download profile PDF</Button>
           <p className="text-xs text-muted-foreground">Jobloom doesn't handle payments. You agree the price and pay the professional directly.</p>
           <ReportButton type="profile" id={pro.user_id} label="Report this profile" />
         </aside>
