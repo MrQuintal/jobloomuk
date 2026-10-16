@@ -57,6 +57,13 @@
       "when": 1792170074039,
       "tag": "0007_avatars_read",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792181877490,
+      "tag": "0008_pricing_guidance_read_access",
+      "breakpoints": true
     }
   ]
 }

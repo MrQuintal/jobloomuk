@@ -1,0 +1,2 @@
+GRANT SELECT ON public.platform_settings TO authenticated;
+CREATE POLICY "signed in users read pricing tips" ON public.platform_settings FOR SELECT TO authenticated USING (key = 'category_pricing_tips');
