@@ -36,6 +36,13 @@
       "when": 1792167540689,
       "tag": "0004_profile_extras_branches_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792169901243,
+      "tag": "0005_add_profile_phone",
+      "breakpoints": true
     }
   ]
 }
