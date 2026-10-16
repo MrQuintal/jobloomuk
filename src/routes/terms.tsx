@@ -10,7 +10,7 @@ export const Route = createFileRoute("/terms")({
 });
 
 const OPERATOR = "Dino Quintal";
-const ADDRESS = "33 Albrook Close";
+const ADDRESS = "33 Albrook Close, Windlesham, Surrey, GU19 5BW";
 const EMAIL = "MrQuintal@hotmail.co.uk";
 
 function S({ n, title, children }: { n: number; title: string; children: ReactNode }) {
