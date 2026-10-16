@@ -306,6 +306,41 @@ export type Database = {
           },
         ]
       }
+      lead_stages: {
+        Row: {
+          assignee_id: string | null
+          conversation_id: string
+          note: string | null
+          stage: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          conversation_id: string
+          note?: string | null
+          stage?: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          assignee_id?: string | null
+          conversation_id?: string
+          note?: string | null
+          stage?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_stages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
@@ -467,6 +502,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          worker_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_status: string
@@ -497,6 +553,30 @@ export type Database = {
           phone?: string | null
           postcode?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      quote_templates: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          title: string
+          worker_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          title: string
+          worker_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          title?: string
+          worker_id?: string
         }
         Relationships: []
       }
@@ -589,6 +669,47 @@ export type Database = {
           },
         ]
       }
+      saved_searches: {
+        Row: {
+          area: string | null
+          category_id: string | null
+          created_at: string
+          id: string
+          keyword: string | null
+          last_seen_at: string
+          name: string
+          worker_id: string
+        }
+        Insert: {
+          area?: string | null
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          keyword?: string | null
+          last_seen_at?: string
+          name: string
+          worker_id: string
+        }
+        Update: {
+          area?: string | null
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          keyword?: string | null
+          last_seen_at?: string
+          name?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_searches_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_plans: {
         Row: {
           created_at: string
@@ -672,6 +793,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      team_members: {
+        Row: {
+          bio: string | null
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+          role_title: string | null
+          team_role: string
+        }
+        Insert: {
+          bio?: string | null
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+          role_title?: string | null
+          team_role?: string
+        }
+        Update: {
+          bio?: string | null
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          role_title?: string | null
+          team_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -824,10 +983,12 @@ export type Database = {
         Args: { _link: string; _title: string; _user: string }
         Returns: undefined
       }
+      plan_tier: { Args: { _u: string }; Returns: string }
       start_conversation_with_worker: {
         Args: { _body: string; _worker_id: string }
         Returns: string
       }
+      tier_at_least: { Args: { _t: string; _u: string }; Returns: boolean }
       worker_reviews: {
         Args: { _worker: string }
         Returns: {

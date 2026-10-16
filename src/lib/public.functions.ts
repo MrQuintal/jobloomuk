@@ -48,10 +48,11 @@ export const getPro = createServerFn({ method: "GET" })
       .eq("is_published", true)
       .maybeSingle();
     if (!pro) return null;
-    const [{ data: projects }, { data: slots }, { data: reviews }] = await Promise.all([
+    const [{ data: projects }, { data: slots }, { data: reviews }, { data: team }] = await Promise.all([
       sb.from("portfolio_projects").select("id, title, description, location_text, completed_on, image_paths").eq("worker_id", pro.user_id).order("completed_on", { ascending: false }),
       sb.from("availability_slots").select("weekday, start_time, end_time").eq("worker_id", pro.user_id).order("weekday"),
       sb.rpc("worker_reviews", { _worker: pro.user_id }),
+      sb.from("team_members").select("id, name, role_title, bio").eq("business_id", pro.user_id).order("created_at"),
     ]);
     const paths = (projects ?? []).flatMap((p) => p.image_paths);
     const urls: Record<string, string> = {};
@@ -63,6 +64,7 @@ export const getPro = createServerFn({ method: "GET" })
       pro,
       projects: (projects ?? []).map((p) => ({ ...p, images: p.image_paths.map((x) => urls[x]).filter(Boolean) })),
       slots: slots ?? [],
+      team: team ?? [],
       reviews: reviews ?? [],
       summary: summarise(reviews ?? []),
     };

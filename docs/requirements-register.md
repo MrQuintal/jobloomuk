@@ -22,7 +22,9 @@
 | REP-003 | Verification labels | Should | 5 | Planned |
 | PRC-001 | Price guidance from historical work | Could | 5 | Planned |
 | ADM-003 | Full admin modules (A–P in spec §17) | Must | 6 | Partial |
-| SUB-001 | Worker subscriptions billing | Must | 7 | Planned |
+| SUB-001 | Worker subscriptions billing | Must | 7 | Done |
+| SUB-002 | Pro tools: analytics, AI writing, quote templates, job filters/saved searches/alerts, unlimited portfolio (free = 3) | Must | 7 | Done |
+| SUB-003 | Business tools: team members on public profile, lead pipeline with assignment, CSV report | Must | 7 | Done |
 | BIZ-001 | No job payments or commission, ever | Must | All | Enforced |
 | PRV-001 | Data export & account deletion | Must | 8 | Done |
 | MOD-001 | Reports on profiles, reviews and people | Must | 5 | Done |
@@ -36,3 +38,5 @@
 - Phase 5 built: two-sided completion confirmation, 4-part reviews with public reply, average hidden below 3 reviews, newcomer interleaving in the directory, reports.
 - Phase 6 partial: admin overview, categories, feature switches, moderation queue, suspend/reactivate, deletion requests.
 - Blocked: SUB-001 billing (needs payment provider choice), email delivery (needs email domain), PRC-001 price guidance and REP-003 verification labels (need owner decisions), maps/geocoding (needs provider).
+
+- Plan features: gated by `plan_tier()` in the database (RLS + portfolio trigger); `/tools` page. Not yet built: banners/branding, video, service-area map, profile PDF, branches, shared team calendar, sponsored placement, email alerts (in-app flags only).

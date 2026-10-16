@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell } from "@/components/site/PageShell";
@@ -46,7 +46,8 @@ function Pro() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(proQ(slug));
   if (!data) return null;
-  const { pro, projects, slots, reviews, summary } = data;
+  const { pro, projects, slots, reviews, summary, team } = data;
+  useEffect(() => { void supabase.from("profile_events").insert({ worker_id: pro.user_id, kind: "view" }); }, [pro.user_id]);
   return (
     <PageShell>
       <section className="container-page grid gap-10 py-14 md:grid-cols-[1fr_22rem]">
@@ -59,6 +60,21 @@ function Pro() {
             {pro.years_experience != null && <span>{pro.years_experience} years' experience</span>}
           </div>
           {pro.bio && <p className="mt-8 whitespace-pre-line leading-relaxed">{pro.bio}</p>}
+
+          {team.length > 0 && (
+            <>
+              <h2 className="mt-14 text-2xl font-medium">The team</h2>
+              <ul className="mt-6 grid gap-4 md:grid-cols-2">
+                {team.map((m) => (
+                  <li key={m.id} className="rounded-2xl border border-border bg-card p-5">
+                    <p className="font-medium">{m.name}</p>
+                    {m.role_title && <p className="text-sm text-muted-foreground">{m.role_title}</p>}
+                    {m.bio && <p className="mt-2 text-sm">{m.bio}</p>}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           <h2 className="mt-14 text-2xl font-medium">Portfolio</h2>
           {projects.length === 0 ? <p className="mt-3 text-muted-foreground">No projects added yet.</p> : (
@@ -138,6 +154,7 @@ function ContactBox({ workerId, name }: { workerId: string; name: string }) {
         const { data, error } = await supabase.rpc("start_conversation_with_worker", { _worker_id: workerId, _body: body.trim() });
         setBusy(false);
         if (error) { toast.error(error.message); return; }
+        void supabase.from("profile_events").insert({ worker_id: workerId, kind: "enquiry" });
         navigate({ to: "/messages/$id", params: { id: data } });
       }}
     >

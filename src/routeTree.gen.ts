@@ -29,6 +29,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedWorkerRouteImport } from './routes/_authenticated/worker'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
@@ -139,6 +140,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedWorkerRoute = AuthenticatedWorkerRouteImport.update({
   id: '/worker',
   path: '/worker',
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof AuthenticatedJobsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/tools': typeof AuthenticatedToolsRoute
   '/worker': typeof AuthenticatedWorkerRoute
   '/pro/$slug': typeof ProSlugRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof AuthenticatedJobsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/tools': typeof AuthenticatedToolsRoute
   '/worker': typeof AuthenticatedWorkerRoute
   '/pro/$slug': typeof ProSlugRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/worker': typeof AuthenticatedWorkerRoute
   '/pro/$slug': typeof ProSlugRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -303,6 +312,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/notifications'
     | '/onboarding'
+    | '/tools'
     | '/worker'
     | '/pro/$slug'
     | '/admin/audit'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/notifications'
     | '/onboarding'
+    | '/tools'
     | '/worker'
     | '/pro/$slug'
     | '/admin/audit'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
+    | '/_authenticated/tools'
     | '/_authenticated/worker'
     | '/pro/$slug'
     | '/_authenticated/admin/audit'
@@ -535,6 +547,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tools': {
+      id: '/_authenticated/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AuthenticatedToolsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/worker': {
       id: '/_authenticated/worker'
       path: '/worker'
@@ -609,6 +628,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedWorkerRoute: typeof AuthenticatedWorkerRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminModerationRoute: typeof AuthenticatedAdminModerationRoute
@@ -626,6 +646,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedWorkerRoute: AuthenticatedWorkerRoute,
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminModerationRoute: AuthenticatedAdminModerationRoute,
