@@ -16,6 +16,7 @@ import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 import { DistanceFilter } from "@/components/app/DistanceFilter";
 import { useGeocode, useGeocodeMany } from "@/lib/geocode";
 import { formatMiles, milesBetween, withinRadius } from "@/lib/rules/distance";
+import { listCategories } from "@/lib/public.functions";
 
 function PosterAvatar({ id }: { id: string }) {
   const av = useAvatars([id]);
@@ -71,15 +72,25 @@ function JobsPage() {
   const me = useGeocode(place);
   const jobCoords = useGeocodeMany(me.data ? (q.data?.jobs ?? []).map((j) => j.area) : []);
   const milesTo = (area: string) => { const c = jobCoords.get(area); return me.data && c ? milesBetween(me.data, c) : null; };
-  const shown = (q.data?.jobs ?? []).filter((j) => matches(j, flt) && withinRadius(milesTo(j.area), radius));
+  const cats = useQuery({ queryKey: ["categories"], queryFn: () => listCategories() });
+  const [cat, setCat] = useState<string | null>(null);
+  const shown = (q.data?.jobs ?? [])
+    .filter((j) => (!cat || j.category_id === cat) && matches(j, flt) && withinRadius(milesTo(j.area), radius))
+    .sort((a, b) => (me.data ? (milesTo(a.area) ?? 1e9) - (milesTo(b.area) ?? 1e9) : 0));
 
   return (
     <>
       <PageTitle title="Find jobs">Open jobs posted by customers. Show interest with a short message — the customer decides who to talk to.</PageTitle>
+      <div className="mb-4 flex max-w-4xl flex-wrap gap-2">
+        <button onClick={() => setCat(null)} className={`rounded-full border px-3 py-1.5 text-sm ${!cat ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>All</button>
+        {(cats.data ?? []).map((c) => (
+          <button key={c.id} onClick={() => setCat(c.id)} className={`rounded-full border px-3 py-1.5 text-sm ${cat === c.id ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{c.name}</button>
+        ))}
+      </div>
       <div className="mb-4 max-w-4xl rounded-2xl border border-border bg-card p-4">
         <p className="mb-2 text-sm font-medium">How far are you willing to travel?</p>
         <DistanceFilter place={place} onPlace={setPlaceEdit} radius={radius} onRadius={setRadius} found={me.isFetched && place.trim().length >= 2 ? !!me.data : null} placeholder="Your base postcode or town" />
-        <p className="mt-2 text-xs text-muted-foreground">Approximate straight-line distance from your base to the job's area.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Approximate straight-line distance from your base to the job's area. Closest jobs are shown first.</p>
       </div>
       <div className="mb-6 max-w-4xl rounded-2xl border border-border bg-card p-4">
         {pro ? (
