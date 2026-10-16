@@ -48,6 +48,7 @@ function PhotoSection({ uid, name }: { uid: string; name: string }) {
 }
 
 export const Route = createFileRoute("/_authenticated/account")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/account", "Account & privacy", "Manage your Jobloom profile photo, personal data export and account privacy requests.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

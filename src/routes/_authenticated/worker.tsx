@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth";
 import { WEEKDAYS, isValidSlot, slugify } from "@/lib/rules/marketplace";
 
 export const Route = createFileRoute("/_authenticated/worker")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/worker", "My business", "Manage your Jobloom professional profile, availability, services and portfolio.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

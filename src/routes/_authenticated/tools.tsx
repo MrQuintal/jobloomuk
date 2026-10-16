@@ -15,6 +15,7 @@ import { aiWrite } from "@/lib/ai.functions";
 import { conversionRate, LEAD_STAGES, tierAtLeast, type PlanTier } from "@/lib/rules/plans";
 
 export const Route = createFileRoute("/_authenticated/tools")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/tools", "Pro tools", "Manage your Jobloom professional analytics, saved searches and business tools.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

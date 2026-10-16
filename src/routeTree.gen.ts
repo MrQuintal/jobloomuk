@@ -21,6 +21,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfessionalsRouteImport } from './routes/professionals'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
@@ -98,6 +99,11 @@ const ProfessionalsRoute = ProfessionalsRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/professionals': typeof ProfessionalsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/professionals': typeof ProfessionalsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/professionals': typeof ProfessionalsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/professionals'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/account'
     | '/billing'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/professionals'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/account'
     | '/billing'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/professionals'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/billing'
@@ -413,6 +425,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ProfessionalsRoute: typeof ProfessionalsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ProSlugRoute: typeof ProSlugRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -503,6 +516,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -693,6 +713,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ProfessionalsRoute: ProfessionalsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ProSlugRoute: ProSlugRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/notifications", "Notifications", "Read Jobloom updates about your jobs, messages, booking requests and reviews.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

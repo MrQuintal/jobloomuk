@@ -16,6 +16,7 @@ import { PricingGuidance } from "@/components/app/PricingGuidance";
 import { sendJobAlertEmails } from "@/lib/alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/customer")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/customer", "My jobs", "Manage your Jobloom job posts and responses from independent UK professionals.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

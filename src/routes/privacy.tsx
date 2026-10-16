@@ -3,6 +3,7 @@ import { ContentPage } from "@/components/site/ContentPage";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/privacy")({
+  staticData: { sitemap: true },
   head: () => pageHead("/privacy", "Privacy notice", "How Jobloom collects, uses and protects personal data under UK GDPR."),
   component: () => (
     <ContentPage eyebrow="Legal" title="Privacy notice" intro="Draft — to be finalised once Jobloom's company details and ICO registration are confirmed.">

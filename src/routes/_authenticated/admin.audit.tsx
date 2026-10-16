@@ -6,6 +6,7 @@ import { PageTitle } from "@/components/app/AppShell";
 import { RoleGate } from "@/components/app/RoleGate";
 
 export const Route = createFileRoute("/_authenticated/admin/audit")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/admin/audit", "Admin audit log", "Review the permanent record of important Jobloom account and role changes.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

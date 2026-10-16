@@ -13,6 +13,7 @@ import { PricingTipsEditor } from "@/components/app/PricingGuidance";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/admin/settings", "Admin settings", "Manage Jobloom categories, pricing tips, feature switches and account overview.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

@@ -15,6 +15,7 @@ import { ReportButton } from "@/components/app/ReportButton";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 
 export const Route = createFileRoute("/_authenticated/messages/$id")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/messages/$id", "Conversation", "Discuss a Jobloom introduction, arrange visits and confirm completion privately.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

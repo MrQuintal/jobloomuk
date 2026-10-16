@@ -8,6 +8,7 @@ import { RoleGate } from "@/components/app/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/moderation")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/admin/moderation", "Admin moderation", "Manage Jobloom reports, published reviews and privacy requests.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

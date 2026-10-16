@@ -16,6 +16,7 @@ const plansQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/pricing")({
+  staticData: { sitemap: true },
   head: () => pageHead("/pricing", "Pricing", "Jobloom is free for customers. Professionals choose a simple subscription for profile and business tools — never commission on jobs."),
   loader: ({ context }) => context.queryClient.ensureQueryData(plansQuery),
   component: Pricing,

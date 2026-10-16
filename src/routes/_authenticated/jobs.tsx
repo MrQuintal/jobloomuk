@@ -20,6 +20,7 @@ function PosterAvatar({ id }: { id: string }) {
 }
 
 export const Route = createFileRoute("/_authenticated/jobs")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/jobs", "Find jobs", "Browse open UK customer jobs and manage your professional responses on Jobloom.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

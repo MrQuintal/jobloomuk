@@ -59,6 +59,7 @@ async function handle(req: Request, env: StripeEnv) {
 }
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       POST: async ({ request }) => {

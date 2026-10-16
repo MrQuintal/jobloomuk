@@ -8,7 +8,11 @@ import { Label } from "@/components/ui/label";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => pageHead("/reset-password", "Choose a new password", "Set a new password for your Jobloom account."),
+  staticData: { sitemap: false },
+  head: () => {
+    const head = pageHead("/reset-password", "Choose a new password", "Set a new password for your Jobloom account.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: Reset,
 });
 

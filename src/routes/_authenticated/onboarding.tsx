@@ -9,6 +9,7 @@ import { PageTitle } from "@/components/app/AppShell";
 import type { AppRole } from "@/lib/rules/roles";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/onboarding", "Choose your account type", "Choose a Jobloom customer or professional account to get started.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

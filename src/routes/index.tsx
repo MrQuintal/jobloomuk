@@ -6,6 +6,7 @@ import { pageHead } from "@/lib/seo";
 import hero from "@/assets/hero-craft.jpg";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () =>
     pageHead(
       "/",

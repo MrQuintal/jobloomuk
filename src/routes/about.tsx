@@ -3,6 +3,7 @@ import { ContentPage } from "@/components/site/ContentPage";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/about")({
+  staticData: { sitemap: true },
   head: () => pageHead("/about", "About", "Why Jobloom exists: a fairer, more transparent UK services platform where good professionals prove their value."),
   component: () => (
     <ContentPage
