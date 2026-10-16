@@ -1031,6 +1031,13 @@ export type Database = {
         Returns: undefined
       }
       plan_tier: { Args: { _u: string }; Returns: string }
+      public_avatars: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          id: string
+        }[]
+      }
       start_conversation_with_worker: {
         Args: { _body: string; _worker_id: string }
         Returns: string
