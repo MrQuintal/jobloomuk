@@ -85,6 +85,13 @@
       "when": 1792191728247,
       "tag": "0011_super_admin_business_access",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792193726781,
+      "tag": "0012_members_read_open_jobs",
+      "breakpoints": true
     }
   ]
 }
