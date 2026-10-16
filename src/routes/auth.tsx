@@ -19,7 +19,8 @@ export const Route = createFileRoute("/auth")({
     mode: s.mode === "signup" || s.mode === "reset" ? s.mode : "signin",
     role: s.role === "worker" ? "worker" : s.role === "customer" ? "customer" : undefined,
     next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : undefined,
-  }),
+    };
+  },
   head: () => pageHead("/auth", "Log in or join", "Log in to Jobloom or create a free account as a customer or professional."),
   component: AuthPage,
 });
