@@ -8,7 +8,7 @@ export function SiteFooter() {
         <div className="md:col-span-2">
           <Logo inverted />
           <p className="mt-4 max-w-sm text-sm text-forest-foreground/70">
-            A fairer way to find good people for the work you need doing — and for good people to be found. Made in the UK.
+            A fairer way to find good people for the work you need doing and for good people to be found. Made in the UK.
           </p>
         </div>
         <div className="flex flex-col gap-2 text-sm">
