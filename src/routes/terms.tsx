@@ -9,7 +9,9 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
 });
 
-const TBC = "To be confirmed";
+const OPERATOR = "Dino Quintal";
+const ADDRESS = "33 Albrook Close";
+const EMAIL = "MrQuintal@hotmail.co.uk";
 
 function S({ n, title, children }: { n: number; title: string; children: ReactNode }) {
   return (
@@ -37,10 +39,10 @@ function TermsPage() {
           <p>Our purpose is simple: <strong className="text-foreground">to help the right people find each other and make it easier for them to connect.</strong></p>
           <p>These Terms of Use govern your access to and use of the jobloom website, applications and related services.</p>
           <dl className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-1 rounded-lg border border-border p-4">
-            <dt className="font-semibold text-foreground">Platform operator</dt><dd>{TBC}</dd>
+            <dt className="font-semibold text-foreground">Platform operator</dt><dd>{OPERATOR}</dd>
             <dt className="font-semibold text-foreground">Trading name</dt><dd>jobloom</dd>
-            <dt className="font-semibold text-foreground">Business address</dt><dd>{TBC}</dd>
-            <dt className="font-semibold text-foreground">Contact email</dt><dd>{TBC}</dd>
+            <dt className="font-semibold text-foreground">Business address</dt><dd>{ADDRESS}</dd>
+            <dt className="font-semibold text-foreground">Contact email</dt><dd>{EMAIL}</dd>
             <dt className="font-semibold text-foreground">Website</dt><dd>jobloom.co.uk</dd>
           </dl>
           <p>By creating an account or using jobloom, you agree to these terms. If you do not agree, you must not use the platform.</p>
@@ -188,7 +190,7 @@ function TermsPage() {
 
         <S n={21} title="Complaints and contact">
           <p>If you have a concern about jobloom itself, your account, a subscription or platform content, contact us at:</p>
-          <p><strong className="text-foreground">Email:</strong> {TBC}<br /><strong className="text-foreground">Postal address:</strong> {TBC}</p>
+          <p><strong className="text-foreground">Email:</strong> {EMAIL}<br /><strong className="text-foreground">Postal address:</strong> {ADDRESS}</p>
           <p>Complaints about work arranged directly between users should normally be raised with the other party. You may also report suspected fraud, unsafe conduct or breaches of platform rules to jobloom. We may review such reports but do not guarantee a particular outcome.</p>
         </S>
 
