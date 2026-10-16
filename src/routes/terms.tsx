@@ -3,6 +3,7 @@ import { ContentPage } from "@/components/site/ContentPage";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/terms")({
+  staticData: { sitemap: true },
   head: () => pageHead("/terms", "Terms of use", "The terms for using Jobloom, the UK introductions platform for customers and independent professionals."),
   component: () => (
     <ContentPage eyebrow="Legal" title="Terms of use" intro="Draft — these terms must be reviewed by a UK solicitor before launch.">

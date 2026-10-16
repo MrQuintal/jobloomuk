@@ -15,6 +15,7 @@ import { changePlan, createCheckoutSession, createPortalSession } from "@/lib/pa
 import { currentTier, formatPence, PLAN_FEATURES, PRICE_IDS, PRICES_PENCE, type Interval } from "@/lib/rules/plans";
 
 export const Route = createFileRoute("/_authenticated/billing")({
+  staticData: { sitemap: false },
   validateSearch: (s: Record<string, unknown>): { session_id?: string | undefined } => ({
     session_id: typeof s["session_id"] === "string" ? (s["session_id"] as string) : undefined,
   }),

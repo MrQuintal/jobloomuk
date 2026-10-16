@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { homeForRoles } from "@/lib/rules/roles";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/dashboard", "Your account", "Open the appropriate Jobloom account area for your assigned roles.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

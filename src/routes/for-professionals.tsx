@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/for-professionals")({
+  staticData: { sitemap: true },
   head: () => pageHead("/for-professionals", "For professionals", "Showcase your work, find UK customer jobs and build a reputation on evidence. Simple subscriptions, no commission on your jobs."),
   component: () => (
     <ContentPage

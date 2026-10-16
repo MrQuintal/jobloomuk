@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { ALL_ROLES, canManageRole, ROLE_LABELS, type AppRole } from "@/lib/rules/roles";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
+  staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/admin/users", "Admin users", "Manage Jobloom account roles and account status with audited owner controls.");
     return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };

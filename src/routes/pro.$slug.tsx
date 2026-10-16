@@ -18,6 +18,7 @@ import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 const proQ = (slug: string) => queryOptions({ queryKey: ["pro", slug], queryFn: () => getPro({ data: { slug } }) });
 
 export const Route = createFileRoute("/pro/$slug")({
+  staticData: { sitemap: true },
   loader: async ({ context, params }) => {
     const d = await context.queryClient.ensureQueryData(proQ(params.slug));
     if (!d) throw notFound();

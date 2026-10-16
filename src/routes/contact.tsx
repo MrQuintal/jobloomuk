@@ -4,6 +4,7 @@ import { ComingSoon } from "@/components/site/PageShell";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/contact")({
+  staticData: { sitemap: true },
   head: () => pageHead("/contact", "Contact", "Get in touch with the Jobloom team about your account, a professional profile or a complaint."),
   component: () => (
     <ContentPage eyebrow="Contact" title="Talk to the Jobloom team.">

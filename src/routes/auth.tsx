@@ -13,6 +13,7 @@ import { pageHead } from "@/lib/seo";
 type Search = { mode?: "signin" | "signup" | "reset" | undefined; role?: "customer" | "worker" | undefined; next?: string | undefined };
 
 export const Route = createFileRoute("/auth")({
+  staticData: { sitemap: false },
   validateSearch: (raw: Record<string, unknown>): Search => {
     const s = raw as { mode?: unknown; role?: unknown; next?: unknown };
     return {
