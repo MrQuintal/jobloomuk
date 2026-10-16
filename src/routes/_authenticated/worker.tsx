@@ -57,7 +57,7 @@ function WorkerPage() {
   );
 }
 
-type Profile = { slug: string; business_name: string; headline: string | null; bio: string | null; base_area: string | null; travel_radius_miles: number; years_experience: number | null; is_published: boolean };
+type Profile = { slug: string; business_name: string; headline: string | null; bio: string | null; base_area: string | null; travel_radius_miles: number; years_experience: number | null; is_published: boolean; phone: string | null };
 
 function ProfileForm({ uid, profile }: { uid: string; profile: Profile | null }) {
   const qc = useQueryClient();
@@ -68,6 +68,7 @@ function ProfileForm({ uid, profile }: { uid: string; profile: Profile | null })
     base_area: profile?.base_area ?? "",
     travel_radius_miles: profile?.travel_radius_miles ?? 15,
     years_experience: profile?.years_experience ?? "",
+    phone: profile?.phone ?? "",
     is_published: profile?.is_published ?? false,
   });
   const [busy, setBusy] = useState(false);
@@ -85,6 +86,7 @@ function ProfileForm({ uid, profile }: { uid: string; profile: Profile | null })
       base_area: f.base_area.trim() || null,
       travel_radius_miles: Number(f.travel_radius_miles) || 15,
       years_experience: f.years_experience === "" ? null : Number(f.years_experience),
+      phone: f.phone.trim() || null,
       is_published: f.is_published,
       slug: profile?.slug ?? `${slugify(f.business_name)}-${uid.slice(0, 6)}`,
     };
@@ -102,6 +104,7 @@ function ProfileForm({ uid, profile }: { uid: string; profile: Profile | null })
         <div className="md:col-span-2"><Label>Business name</Label><Input value={f.business_name} onChange={set("business_name")} maxLength={80} /></div>
         <div className="md:col-span-2"><Label>Headline</Label><Input value={f.headline} onChange={set("headline")} maxLength={140} placeholder="e.g. Kitchen and bathroom fitter in Leeds" /></div>
         <div className="md:col-span-2"><Label>About your work</Label><Textarea rows={5} value={f.bio} onChange={set("bio")} maxLength={3000} /></div>
+        <div><Label>Phone number</Label><Input type="tel" value={f.phone} onChange={set("phone")} maxLength={20} placeholder="e.g. 07700 900123" /></div>
         <div><Label>Based in (town or postcode area)</Label><Input value={f.base_area} onChange={set("base_area")} maxLength={80} /></div>
         <div><Label>Travel radius (miles)</Label><Input type="number" min={1} max={200} value={f.travel_radius_miles} onChange={set("travel_radius_miles")} /></div>
         <div><Label>Years' experience</Label><Input type="number" min={0} max={70} value={f.years_experience} onChange={set("years_experience")} /></div>

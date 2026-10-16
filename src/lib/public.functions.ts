@@ -44,7 +44,7 @@ export const getPro = createServerFn({ method: "GET" })
     const sb = publicClient();
     const { data: pro } = await sb
       .from("worker_profiles")
-      .select("user_id, slug, business_name, headline, bio, base_area, travel_radius_miles, years_experience, banner_path, worker_specialisms(is_primary, categories(slug, name))")
+      .select("user_id, slug, business_name, headline, bio, base_area, travel_radius_miles, years_experience, phone, banner_path, worker_specialisms(is_primary, categories(slug, name))")
       .eq("slug", data.slug)
       .eq("is_published", true)
       .maybeSingle();

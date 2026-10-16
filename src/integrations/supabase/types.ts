@@ -901,6 +901,7 @@ export type Database = {
           headline: string | null
           is_published: boolean
           is_sponsored: boolean
+          phone: string | null
           slug: string
           travel_radius_miles: number
           updated_at: string
@@ -916,6 +917,7 @@ export type Database = {
           headline?: string | null
           is_published?: boolean
           is_sponsored?: boolean
+          phone?: string | null
           slug: string
           travel_radius_miles?: number
           updated_at?: string
@@ -931,6 +933,7 @@ export type Database = {
           headline?: string | null
           is_published?: boolean
           is_sponsored?: boolean
+          phone?: string | null
           slug?: string
           travel_radius_miles?: number
           updated_at?: string
