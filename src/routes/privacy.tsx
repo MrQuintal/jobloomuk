@@ -13,7 +13,9 @@ export const Route = createFileRoute("/privacy")({
   ),
 });
 
-const TBC = "To be confirmed";
+const OPERATOR = "Dino Quintal";
+const ADDRESS = "33 Albrook Close";
+const EMAIL = "MrQuintal@hotmail.co.uk";
 
 const NOTICE = `
 ## 1. Introduction
@@ -28,10 +30,10 @@ We aim to handle personal information responsibly, transparently and in accordan
 
 The organisation responsible for deciding how and why your personal information is processed is:
 
-**Data controller:** ${TBC}
+**Data controller:** ${OPERATOR}
 **Trading name:** jobloom
-**Address:** ${TBC}
-**Privacy contact:** ${TBC}
+**Address:** ${ADDRESS}
+**Privacy contact:** ${EMAIL}
 **Website:** jobloom.co.uk
 
 If we appoint a Data Protection Officer or are required to identify a representative, the relevant details will be provided here.
@@ -210,7 +212,7 @@ Subject to the circumstances and applicable law, you may have the right to:
 
 These rights are not absolute in every situation. For example, we may need to retain certain information to comply with legal obligations or establish, exercise or defend legal claims.
 
-You can download a copy of your data from **Account & privacy** when signed in. To exercise other rights, contact ${TBC}. We may need to verify your identity before responding.
+You can download a copy of your data from **Account & privacy** when signed in. To exercise other rights, contact ${EMAIL}. We may need to verify your identity before responding.
 
 You can also complain to the UK Information Commissioner's Office at **ico.org.uk** if you are concerned about how your information is handled.
 
@@ -236,7 +238,7 @@ No online service can guarantee absolute security. You should use a strong passw
 
 jobloom is intended for people who are legally able to use the relevant services. We do not knowingly collect children's personal information where doing so would be unlawful.
 
-If you believe a child has provided personal information to us inappropriately, contact ${TBC} so we can review the matter.
+If you believe a child has provided personal information to us inappropriately, contact ${EMAIL} so we can review the matter.
 
 ## 16. Automated tools and recommendations
 
@@ -261,9 +263,9 @@ The latest version will be published on our website with its updated date. Where
 For questions about this Privacy Notice, requests concerning personal information or privacy complaints, contact:
 
 **jobloom Privacy Contact**
-**Legal business name:** ${TBC}
-**Email:** ${TBC}
-**Address:** ${TBC}
+**Legal business name:** ${OPERATOR}
+**Email:** ${EMAIL}
+**Address:** ${ADDRESS}
 **Website:** jobloom.co.uk
 
 We will review and respond to requests in accordance with applicable data protection law.
