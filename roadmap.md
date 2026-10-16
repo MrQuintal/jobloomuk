@@ -6,3 +6,5 @@
 - [ ] Email notifications — blocked: email domain setup
 - [ ] Verification labels & price guidance — blocked: owner rules
 - [ ] Maps/travel radius map — blocked: map provider choice
+
+- [ ] Subscriptions: create Pro/Business products (£6/£10 monthly, annual), checkout, webhook, billing portal — waiting on subscription business-logic answers
