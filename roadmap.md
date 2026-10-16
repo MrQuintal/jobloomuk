@@ -8,5 +8,6 @@
 - [x] Email job alerts — Pro+ workers emailed on matching new jobs (in-app alerts unchanged)
 - [x] Live payments — Stripe go-live complete
 - [x] Custom domain — jobloom.co.uk and www.jobloom.co.uk connected and verified
-- [ ] Publish launch — blocked: owner has not explicitly authorised publication
+- [x] Publish launch — owner authorised publication; legal address update published
 - [x] Owner super-admin access — verified requesting account promoted; existing professional role retained
+- [x] Super-admin-only Business access grant in Users; grant/remove tested on owner account, Business tools and billing notice verified, audit confirmed

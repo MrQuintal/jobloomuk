@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { changePlan, createCheckoutSession, createPortalSession } from "@/lib/payments.functions";
-import { currentTier, formatPence, PLAN_FEATURES, PRICE_IDS, PRICES_PENCE, type Interval } from "@/lib/rules/plans";
+import { currentTier, effectiveTier, formatPence, PLAN_FEATURES, PRICE_IDS, PRICES_PENCE, type Interval } from "@/lib/rules/plans";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   staticData: { sitemap: false },
@@ -33,16 +33,30 @@ function Billing() {
   const [priceId, setPriceId] = useState<string | null>(null);
 
   const sub = useQuery({
-    queryKey: ["subscription", user!.id],
+    queryKey: ["subscription", user?.id],
+    enabled: !!user,
     refetchInterval: session_id ? 3000 : false,
     queryFn: async () => {
+      if (!user) return null;
       const { data } = await supabase.from("subscriptions").select("*")
-        .eq("user_id", user!.id).eq("environment", getStripeEnvironment())
+        .eq("user_id", user.id).eq("environment", getStripeEnvironment())
         .order("created_at", { ascending: false }).limit(1).maybeSingle();
       return data;
     },
   });
+  const grant = useQuery({
+    queryKey: ["business-access", user?.id],
+    enabled: !!user,
+    refetchInterval: 15000,
+    queryFn: async () => {
+      if (!user) return false;
+      const { data, error } = await supabase.from("business_access_grants").select("user_id").eq("user_id", user.id).maybeSingle();
+      if (error) throw error;
+      return !!data;
+    },
+  });
   const tier = currentTier(sub.data);
+  const accessTier = effectiveTier(sub.data, grant.data === true);
   const [switching, setSwitching] = useState<string | null>(null);
   const [polling, setPolling] = useState(false);
 
@@ -76,6 +90,7 @@ function Billing() {
     <div>
       <PaymentTestModeBanner />
       <PageTitle title="Plan & billing" />
+      {grant.data && <p className="mb-4 text-sm text-foreground"><strong className="capitalize">{accessTier} access</strong> — complimentary upgrade granted by Jobloom. Your paid subscription and any existing charges are unchanged.</p>}
       <p className="mb-6 text-muted-foreground">
         You're on <strong className="text-foreground capitalize">{tier}</strong>
         {tier !== "free" && currentPrice && ` (${currentPrice.endsWith("yearly") ? "annual" : "monthly"})`}.

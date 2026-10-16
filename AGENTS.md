@@ -17,5 +17,6 @@
 - Signed-in pages live under `src/routes/_authenticated/`; `RoleGate` is UI-only, RLS is the real guard.
 - Shared marketing layout is `PageShell`/`ContentPage` in `src/components/site/`; app layout is `AppShell` — keeps pages consistent.
 - Payments: subscription state comes only from the signed payments webhook into public.subscriptions; plan tier is derived in src/lib/rules/plans.ts — client never decides access.
+- Complimentary Business access lives separately in business_access_grants and is applied by plan_tier; only the audited super-admin DB function may change it, so billing remains webhook-owned.
 - Pricing guidance reads the category-keyed tips from platform_settings through a shared parser and editor; no inferred historical amounts — keeps customer guidance owner-editable and avoids fabricated estimates.
 - App emails use the managed synchronous sendTemplateEmail helper and React Email registry; /lovable/* endpoints authenticate themselves and bypass app redirects/CSRF, with no app email queues or suppression tables — delivery and unsubscribe handling belong to the managed service.

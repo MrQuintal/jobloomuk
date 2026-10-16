@@ -141,6 +141,32 @@ export type Database = {
           },
         ]
       }
+      business_access_grants: {
+        Row: {
+          granted_at: string
+          granted_by: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_access_grants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -986,6 +1012,10 @@ export type Database = {
       accept_job_response: { Args: { _response_id: string }; Returns: string }
       admin_set_account_status: {
         Args: { _status: string; _user: string }
+        Returns: undefined
+      }
+      admin_set_business_access: {
+        Args: { _grant: boolean; _user_id: string }
         Returns: undefined
       }
       admin_set_role: {
