@@ -1,0 +1,1 @@
+CREATE POLICY "avatar read" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id='avatars');
