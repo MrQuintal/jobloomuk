@@ -13,6 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { canRespondToJob, isValidMessage, type JobStatus } from "@/lib/rules/marketplace";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
+import { DistanceFilter } from "@/components/app/DistanceFilter";
+import { useGeocode, useGeocodeMany } from "@/lib/geocode";
+import { formatMiles, milesBetween, withinRadius } from "@/lib/rules/distance";
 
 function PosterAvatar({ id }: { id: string }) {
   const av = useAvatars([id]);
@@ -58,11 +61,26 @@ function JobsPage() {
     (!f.area || j.area.toLowerCase().includes(f.area.toLowerCase()));
   const isAlert = (j: { title: string; description: string; area: string; created_at: string }) =>
     (searches.data ?? []).some((s) => new Date(j.created_at) > new Date(s.last_seen_at) && matches(j, s));
-  const shown = (q.data?.jobs ?? []).filter((j) => matches(j, flt));
+  const base = useQuery({
+    queryKey: ["my-base-area", uid],
+    queryFn: async () => (await supabase.from("worker_profiles").select("base_area").eq("user_id", uid).maybeSingle()).data?.base_area ?? "",
+  });
+  const [placeEdit, setPlaceEdit] = useState<string | null>(null);
+  const place = placeEdit ?? base.data ?? "";
+  const [radius, setRadius] = useState<number | null>(null);
+  const me = useGeocode(place);
+  const jobCoords = useGeocodeMany(me.data ? (q.data?.jobs ?? []).map((j) => j.area) : []);
+  const milesTo = (area: string) => { const c = jobCoords.get(area); return me.data && c ? milesBetween(me.data, c) : null; };
+  const shown = (q.data?.jobs ?? []).filter((j) => matches(j, flt) && withinRadius(milesTo(j.area), radius));
 
   return (
     <>
       <PageTitle title="Find jobs">Open jobs posted by customers. Show interest with a short message — the customer decides who to talk to.</PageTitle>
+      <div className="mb-4 max-w-4xl rounded-2xl border border-border bg-card p-4">
+        <p className="mb-2 text-sm font-medium">How far are you willing to travel?</p>
+        <DistanceFilter place={place} onPlace={setPlaceEdit} radius={radius} onRadius={setRadius} found={me.isFetched && place.trim().length >= 2 ? !!me.data : null} placeholder="Your base postcode or town" />
+        <p className="mt-2 text-xs text-muted-foreground">Approximate straight-line distance from your base to the job's area.</p>
+      </div>
       <div className="mb-6 max-w-4xl rounded-2xl border border-border bg-card p-4">
         {pro ? (
           <>
@@ -104,6 +122,7 @@ function JobsPage() {
                 <h2 className="text-xl font-medium">{j.title} {pro && isAlert(j) && <span className="ml-2 rounded-full bg-bloom px-2 py-0.5 align-middle text-xs text-bloom-foreground">New match</span>}</h2>
               </div>
               <p className="text-sm text-muted-foreground">{[j.categories?.name, j.area, j.timing, j.budget_note].filter(Boolean).join(" · ")}</p>
+              {milesTo(j.area) != null && <p className="mt-2"><span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">{formatMiles(milesTo(j.area)!)}</span></p>}
               <p className="mt-3 whitespace-pre-line text-sm">{j.description}</p>
               {resp ? (
                 <ResponseState resp={resp} onChange={() => qc.invalidateQueries({ queryKey: ["open-jobs"] })} />
