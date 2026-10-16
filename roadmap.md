@@ -9,3 +9,5 @@
 
 - [x] Subscriptions: products, checkout, webhook, billing page
 - [ ] Build the paid plan features (analytics, team profiles, alerts, etc.)
+- [x] Pro/Business core tools (analytics, AI writing, templates, saved searches, pipeline, team)
+- [ ] Remaining plan extras: banner/branding, video, map, profile PDF, branches, team calendar, sponsored placement (needs owner priorities)
