@@ -16,14 +16,14 @@ export function useAvatars(ids: (string | null | undefined)[]) {
       for (const r of data ?? []) if (r.avatar_url?.startsWith("http")) map[r.id] = r.avatar_url;
       if (paths.length) {
         const { data: signed } = await supabase.storage.from("avatars").createSignedUrls(paths.map((p) => p.avatar_url!), 3600);
-        signed?.forEach((s, i) => { if (s.signedUrl) map[paths[i].id] = s.signedUrl; });
+        signed?.forEach((s, i) => { const p = paths[i]; if (s.signedUrl && p) map[p.id] = s.signedUrl; });
       }
       return map;
     },
   }).data ?? {};
 }
 
-export function UserAvatar({ url, name, className = "h-9 w-9" }: { url?: string; name?: string | null; className?: string }) {
+export function UserAvatar({ url, name, className = "h-9 w-9" }: { url?: string | undefined; name?: string | null | undefined; className?: string }) {
   const initials = (name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
   return (
     <Avatar className={className}>
