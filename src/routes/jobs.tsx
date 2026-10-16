@@ -25,21 +25,42 @@ function PosterAvatar({ id }: { id: string }) {
 }
 
 export const Route = createFileRoute("/jobs")({
-  staticData: { sitemap: false },
-  head: () => {
-    const head = pageHead("/jobs", "Find jobs", "Browse open UK customer jobs and manage your professional responses on Jobloom.");
-    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
-  },
+  ssr: false,
+  head: () => pageHead("/jobs", "Find jobs", "Browse open UK customer jobs by trade and distance on Jobloom."),
   component: () => (
-    <RoleGate allow={["worker"]}>
-      <JobsPage />
-    </RoleGate>
+    <PageShell>
+      <section className="container-page py-12 md:py-16">
+        <JobsGate />
+      </section>
+    </PageShell>
   ),
 });
 
-function JobsPage() {
-  const { user } = useAuth();
-  const uid = user!.id;
+function JobsGate() {
+  const { user, ready } = useAuth();
+  if (!ready) return <p className="text-muted-foreground">Loading…</p>;
+  if (!user) {
+    return (
+      <>
+        <PageTitle title="Find jobs">Open jobs posted by customers across the UK, searchable by trade and distance.</PageTitle>
+        <div className="max-w-xl rounded-2xl border border-border bg-card p-6">
+          <p className="text-sm text-muted-foreground">To protect customers' privacy, job details are only shown to signed-in professionals.</p>
+          <div className="mt-4 flex gap-2">
+            <Button asChild variant="forest"><Link to="/auth" search={{ mode: "signin", next: "/jobs" }}>Log in</Link></Button>
+            <Button asChild variant="bloom"><Link to="/auth" search={{ mode: "signup" }}>Join as a professional</Link></Button>
+          </div>
+        </div>
+      </>
+    );
+  }
+  return (
+    <RoleGate allow={["worker"]}>
+      <JobsPage uid={user.id} />
+    </RoleGate>
+  );
+}
+
+function JobsPage({ uid }: { uid: string }) {
   const qc = useQueryClient();
   const q = useQuery({
     queryKey: ["open-jobs", uid],
