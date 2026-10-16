@@ -12,4 +12,28 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // Pre-bundle UI libs at startup so a lazily discovered dep can't be optimized
+    // later against a second React copy ("Cannot read properties of null (reading 'useContext')").
+    optimizeDeps: {
+      include: [
+        "@radix-ui/react-tabs",
+        "@radix-ui/react-dialog",
+        "@radix-ui/react-select",
+        "@radix-ui/react-dropdown-menu",
+        "@radix-ui/react-popover",
+        "@radix-ui/react-tooltip",
+        "@radix-ui/react-checkbox",
+        "@radix-ui/react-switch",
+        "@radix-ui/react-label",
+        "@radix-ui/react-slot",
+        "@radix-ui/react-radio-group",
+        "@radix-ui/react-accordion",
+        "@radix-ui/react-alert-dialog",
+        "@radix-ui/react-avatar",
+        "@radix-ui/react-separator",
+        "@radix-ui/react-scroll-area",
+      ],
+    },
+  },
 });
