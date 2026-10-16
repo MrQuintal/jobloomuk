@@ -14,10 +14,10 @@
 Storage buckets (private): `portfolio` (readable, owner writes into `<user_id>/…`), `documents` (owner + admin only).
 
 ## Planned
-- **Phase 2**: worker_profiles, worker_services, worker_specialisms, portfolio_projects, portfolio_media, credentials, service_areas (centre point + radius).
+- **Phase 2**: worker_profiles, worker_services, worker_specialisms, portfolio_projects, portfolio_media, service_areas (centre point + radius).
 - **Phase 3**: jobs, job_requirements, job_media, job_status_history.
 - **Phase 4**: job_responses (interest), conversations, messages, availability_slots, booking_requests, introductions.
-- **Phase 5**: completions (both-party confirmation), reviews, review_reports, verifications, worker_metrics.
+- **Phase 5**: completions (both-party confirmation), reviews, review_reports, worker_metrics. Credential collection, verification records and badges are excluded by the owner's REP-003 scope decision (16 Oct 2026).
 - **Phase 6**: moderation_cases, complaints, content_pages, notifications.
 - **Phase 7**: worker_subscriptions, billing_events (subscription billing only).
 - **Price guidance**: aggregated from completed jobs, shown only above a minimum sample size.

@@ -19,7 +19,7 @@
 | BKG-001 | Availability & booking requests | Should | 4 | Planned |
 | REP-001 | Reviews only after confirmed completion | Must | 5 | Done |
 | REP-002 | Newcomer fairness in ranking | Must | 5 | Done |
-| REP-003 | Verification labels | Should | 5 | Planned |
+| REP-003 | Tradesperson credential verification and badges | Removed | 5 | Out of scope — owner decision, 16 Oct 2026 |
 | PRC-001 | Price guidance from historical work | Could | 5 | Planned |
 | ADM-003 | Full admin modules (A–P in spec §17) | Must | 6 | Partial |
 | SUB-001 | Worker subscriptions billing | Must | 7 | Done |
@@ -37,6 +37,7 @@
 - Phase 4 built: conversations and messages (`/messages`), visit requests with accept/decline/cancel rules mirrored in `src/lib/rules/marketplace.ts`.
 - Phase 5 built: two-sided completion confirmation, 4-part reviews with public reply, average hidden below 3 reviews, newcomer interleaving in the directory, reports.
 - Phase 6 partial: admin overview, categories, feature switches, moderation queue, suspend/reactivate, deletion requests.
-- Blocked: SUB-001 billing (needs payment provider choice), email delivery (needs email domain), PRC-001 price guidance and REP-003 verification labels (need owner decisions), maps/geocoding (needs provider).
+- REP-003 removed: Jobloom provides introductions, not tradesperson vetting. No ID, insurance or trade-licence approval or verification badges. Customers check credentials directly with the professional and relevant register. Reviews based on mutual completion confirmation remain in scope.
+- Remaining: live subscription payments (owner onboarding), email job alerts (sending email setup), PRC-001 historical price guidance (owner decision and sufficient genuine completed-job price data). Removing verification does not remove Jobloom's other legal or data-protection responsibilities; legal pages still need solicitor review.
 
-- Plan features: gated by `plan_tier()` in the database (RLS + portfolio trigger); `/tools` page. Not yet built: banners/branding, video, service-area map, profile PDF, branches, shared team calendar, sponsored placement, email alerts (in-app flags only).
+- Plan features: gated by `plan_tier()` in the database (RLS + portfolio trigger); `/tools` page. Banners, video, service-area map, printable profile, branches, shared team calendar and sponsored placement are implemented; email alerts remain pending (in-app alerts only). Implementation status is not a claim of complete end-to-end verification.
