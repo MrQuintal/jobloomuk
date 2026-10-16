@@ -9,7 +9,7 @@ const catsQ = queryOptions({ queryKey: ["categories"], queryFn: () => listCatego
 const prosQ = (category?: string) => queryOptions({ queryKey: ["pros", category ?? ""], queryFn: () => listPros({ data: { category } }) });
 
 export const Route = createFileRoute("/professionals")({
-  validateSearch: (s: Record<string, unknown>) => ({ category: typeof s.category === "string" ? s.category : undefined }),
+  validateSearch: (s: Record<string, unknown>): { category?: string } => (typeof s.category === "string" ? { category: s.category } : {}),
   loaderDeps: ({ search }) => ({ category: search.category }),
   loader: ({ context, deps }) => Promise.all([context.queryClient.ensureQueryData(catsQ), context.queryClient.ensureQueryData(prosQ(deps.category))]),
   head: () => pageHead("/professionals", "Find professionals", "Browse independent UK professionals, see their real portfolio work and contact them directly."),

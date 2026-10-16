@@ -24,11 +24,14 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/customer'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedWorkerRouteImport } from './routes/_authenticated/worker'
 import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as AuthenticatedMessagesIndexRouteImport } from './routes/_authenticated/messages.index'
+import { Route as AuthenticatedMessagesIdRouteImport } from './routes/_authenticated/messages.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -104,6 +107,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -129,6 +137,17 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMessagesIndexRoute =
+  AuthenticatedMessagesIndexRouteImport.update({
+    id: '/messages/',
+    path: '/messages/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMessagesIdRoute = AuthenticatedMessagesIdRouteImport.update({
+  id: '/messages/$id',
+  path: '/messages/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,11 +164,14 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/customer': typeof AuthenticatedCustomerRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/jobs': typeof AuthenticatedJobsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/worker': typeof AuthenticatedWorkerRoute
   '/pro/$slug': typeof ProSlugRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/messages/$id': typeof AuthenticatedMessagesIdRoute
+  '/messages/': typeof AuthenticatedMessagesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,11 +188,14 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/customer': typeof AuthenticatedCustomerRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/jobs': typeof AuthenticatedJobsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/worker': typeof AuthenticatedWorkerRoute
   '/pro/$slug': typeof ProSlugRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/messages/$id': typeof AuthenticatedMessagesIdRoute
+  '/messages': typeof AuthenticatedMessagesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -189,11 +214,14 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/customer': typeof AuthenticatedCustomerRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/worker': typeof AuthenticatedWorkerRoute
   '/pro/$slug': typeof ProSlugRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
+  '/_authenticated/messages/': typeof AuthenticatedMessagesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -212,11 +240,14 @@ export interface FileRouteTypes {
     | '/terms'
     | '/customer'
     | '/dashboard'
+    | '/jobs'
     | '/onboarding'
     | '/worker'
     | '/pro/$slug'
     | '/admin/audit'
     | '/admin/users'
+    | '/messages/$id'
+    | '/messages/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -233,11 +264,14 @@ export interface FileRouteTypes {
     | '/terms'
     | '/customer'
     | '/dashboard'
+    | '/jobs'
     | '/onboarding'
     | '/worker'
     | '/pro/$slug'
     | '/admin/audit'
     | '/admin/users'
+    | '/messages/$id'
+    | '/messages'
   id:
     | '__root__'
     | '/'
@@ -255,11 +289,14 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/customer'
     | '/_authenticated/dashboard'
+    | '/_authenticated/jobs'
     | '/_authenticated/onboarding'
     | '/_authenticated/worker'
     | '/pro/$slug'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/users'
+    | '/_authenticated/messages/$id'
+    | '/_authenticated/messages/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -386,6 +423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/jobs': {
+      id: '/_authenticated/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof AuthenticatedJobsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
       path: '/onboarding'
@@ -421,25 +465,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/messages/': {
+      id: '/_authenticated/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof AuthenticatedMessagesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/messages/$id': {
+      id: '/_authenticated/messages/$id'
+      path: '/messages/$id'
+      fullPath: '/messages/$id'
+      preLoaderRoute: typeof AuthenticatedMessagesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCustomerRoute: typeof AuthenticatedCustomerRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedWorkerRoute: typeof AuthenticatedWorkerRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedMessagesIdRoute: typeof AuthenticatedMessagesIdRoute
+  AuthenticatedMessagesIndexRoute: typeof AuthenticatedMessagesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCustomerRoute: AuthenticatedCustomerRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedWorkerRoute: AuthenticatedWorkerRoute,
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  AuthenticatedMessagesIdRoute: AuthenticatedMessagesIdRoute,
+  AuthenticatedMessagesIndexRoute: AuthenticatedMessagesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
