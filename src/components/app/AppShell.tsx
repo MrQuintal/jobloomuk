@@ -1,6 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { LayoutDashboard, Hammer, Users, ScrollText, LogOut, ClipboardList, Search, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Hammer, Users, ScrollText, LogOut, ClipboardList, Search, MessageSquare, Bell, ShieldCheck, Settings, UserCog } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -9,14 +11,24 @@ import { isAdmin, ROLE_LABELS } from "@/lib/rules/roles";
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, roles, signOut } = useAuth();
   const navigate = useNavigate();
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["unread", user?.id],
+    enabled: !!user,
+    refetchInterval: 30000,
+    queryFn: async () => (await supabase.from("notifications").select("id", { count: "exact", head: true }).is("read_at", null)).count ?? 0,
+  });
   const links = [
     roles.includes("customer") && { to: "/customer", label: "My jobs", icon: ClipboardList },
     roles.includes("worker") && { to: "/worker", label: "My business", icon: Hammer },
     roles.includes("worker") && { to: "/jobs", label: "Find jobs", icon: Search },
     (roles.includes("customer") || roles.includes("worker")) && { to: "/messages", label: "Messages", icon: MessageSquare },
+    { to: "/notifications", label: unread ? `Notifications (${unread})` : "Notifications", icon: Bell },
+    { to: "/account", label: "Account & privacy", icon: UserCog },
+    isAdmin(roles) && { to: "/admin/settings", label: "Overview", icon: Settings },
+    (isAdmin(roles) || roles.includes("moderator")) && { to: "/admin/moderation", label: "Moderation", icon: ShieldCheck },
     isAdmin(roles) && { to: "/admin/users", label: "Users", icon: Users },
     isAdmin(roles) && { to: "/admin/audit", label: "Audit log", icon: ScrollText },
-  ].filter(Boolean) as { to: "/customer" | "/worker" | "/jobs" | "/messages" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard }[];
+  ].filter(Boolean) as { to: "/customer" | "/worker" | "/jobs" | "/messages" | "/notifications" | "/account" | "/admin/settings" | "/admin/moderation" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard }[];
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
