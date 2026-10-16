@@ -48,7 +48,9 @@ function Thread() {
   const [when, setWhen] = useState("");
   const [note, setNote] = useState("");
   const end = useRef<HTMLDivElement>(null);
-  useEffect(() => end.current?.scrollIntoView({ block: "end" }), [q.data?.msgs.length]);
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "end" });
+  }, [q.data?.msgs.length]);
   const refresh = () => qc.invalidateQueries({ queryKey: ["thread", id] });
   const av = useAvatars([q.data?.conv?.customer_id, q.data?.conv?.worker_id]);
 
