@@ -25,3 +25,8 @@
 | SUB-001 | Worker subscriptions billing | Must | 7 | Planned |
 | BIZ-001 | No job payments or commission, ever | Must | All | Enforced |
 | PRV-001 | Data export & account deletion | Must | 8 | Planned |
+
+## Build status (Oct 2026)
+- Phase 2 built: worker profile editor, specialisms, availability, portfolio with photos; public directory `/professionals` and profile `/pro/:slug`.
+- Phase 3 built: customers post/pause/close jobs and accept or decline responses; workers browse open jobs (`/jobs`), respond and withdraw.
+- Phase 4 built: conversations and messages (`/messages`), visit requests with accept/decline/cancel rules mirrored in `src/lib/rules/marketplace.ts`.
