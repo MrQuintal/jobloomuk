@@ -51,6 +51,15 @@ function Thread() {
   useEffect(() => {
     end.current?.scrollIntoView({ block: "end" });
   }, [q.data?.msgs.length]);
+  const activity = (q.data?.msgs.length ?? 0) + (q.data?.books.length ?? 0);
+  useEffect(() => {
+    void supabase.from("notifications").update({ read_at: new Date().toISOString() })
+      .eq("user_id", uid).eq("link", `/messages/${id}`).is("read_at", null)
+      .then(() => {
+        qc.invalidateQueries({ queryKey: ["unread"] });
+        qc.invalidateQueries({ queryKey: ["notifications"] });
+      });
+  }, [id, uid, activity, qc]);
   const refresh = () => qc.invalidateQueries({ queryKey: ["thread", id] });
   const av = useAvatars([q.data?.conv?.customer_id, q.data?.conv?.worker_id]);
 
