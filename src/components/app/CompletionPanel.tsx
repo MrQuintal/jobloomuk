@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { canReview } from "@/lib/rules/reputation";
+import { StarPicker, RatingBreakdown } from "@/components/app/StarRating";
 
 const FIELDS = [["quality", "Quality of work"], ["reliability", "Reliability"], ["communication", "Communication"], ["value", "Value"]] as const;
 
@@ -55,12 +56,10 @@ export function CompletionPanel({ convId, uid, customerId, workerId }: { convId:
         }}>
           <p className="font-medium">Leave a review</p>
           {FIELDS.map(([k, label]) => (
-            <label key={k} className="flex items-center justify-between gap-2">
+            <div key={k} className="flex items-center justify-between gap-2">
               <span>{label}</span>
-              <select className="rounded border border-input bg-background px-2 py-1" value={ratings[k]} onChange={(e) => setRatings({ ...ratings, [k]: Number(e.target.value) })}>
-                {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-            </label>
+              <StarPicker label={label} value={ratings[k]} onChange={(n) => setRatings({ ...ratings, [k]: n })} />
+            </div>
           ))}
           <Textarea rows={3} maxLength={2000} value={body} onChange={(e) => setBody(e.target.value)} placeholder="What was it like working together?" />
           <Button size="sm" type="submit" variant="forest" className="w-full" disabled={body.trim().length < 10}>Publish review</Button>
@@ -70,7 +69,7 @@ export function CompletionPanel({ convId, uid, customerId, workerId }: { convId:
       {r && (
         <div className="mt-4 border-t border-border pt-4">
           <p className="font-medium">Review</p>
-          <p className="mt-1 text-xs text-muted-foreground">Quality {r.quality} · Reliability {r.reliability} · Communication {r.communication} · Value {r.value}</p>
+          <div className="mt-1"><RatingBreakdown r={r} /></div>
           <p className="mt-1">{r.body}</p>
           {r.worker_reply && <p className="mt-2 text-muted-foreground">Reply: {r.worker_reply}</p>}
           {!isCustomer && !r.worker_reply && (

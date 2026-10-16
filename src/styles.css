@@ -37,6 +37,7 @@
   --color-bloom: var(--bloom);
   --color-bloom-foreground: var(--bloom-foreground);
   --color-forest: var(--forest);
+  --color-gold: var(--gold);
   --color-forest-foreground: var(--forest-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
@@ -78,6 +79,7 @@
   --bloom: oklch(0.68 0.16 35);
   --bloom-foreground: oklch(0.99 0.008 85);
   --forest: oklch(0.27 0.055 160);
+  --gold: oklch(0.8 0.15 80);
   --forest-foreground: oklch(0.95 0.02 85);
   --destructive: oklch(0.56 0.21 27);
   --destructive-foreground: oklch(0.98 0.01 85);

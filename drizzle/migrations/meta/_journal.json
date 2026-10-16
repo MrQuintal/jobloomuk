@@ -64,6 +64,13 @@
       "when": 1792181877490,
       "tag": "0008_pricing_guidance_read_access",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792186329226,
+      "tag": "0009_migration",
+      "breakpoints": true
     }
   ]
 }
