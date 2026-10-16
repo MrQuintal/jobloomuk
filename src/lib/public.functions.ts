@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { fairOrder, summarise } from "@/lib/rules/reputation";
+import { withSponsored } from "@/lib/rules/media";
 
 function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
@@ -28,13 +29,13 @@ export const listPros = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { data: rows, error } = await publicClient()
       .from("worker_profiles")
-      .select("user_id, slug, business_name, headline, base_area, travel_radius_miles, years_experience, created_at, worker_specialisms(is_primary, categories(slug, name))")
+      .select("user_id, slug, business_name, headline, base_area, travel_radius_miles, years_experience, created_at, is_sponsored, worker_specialisms(is_primary, categories(slug, name))")
       .eq("is_published", true)
       .order("created_at", { ascending: true })
       .limit(100);
     if (error) throw new Error(error.message);
     const list = fairOrder(rows ?? []);
-    return data.category ? list.filter((p) => p.worker_specialisms.some((s) => s.categories?.slug === data.category)) : list;
+    return withSponsored(data.category ? list.filter((p) => p.worker_specialisms.some((s) => s.categories?.slug === data.category)) : list);
   });
 
 export const getPro = createServerFn({ method: "GET" })
@@ -43,18 +44,19 @@ export const getPro = createServerFn({ method: "GET" })
     const sb = publicClient();
     const { data: pro } = await sb
       .from("worker_profiles")
-      .select("user_id, slug, business_name, headline, bio, base_area, travel_radius_miles, years_experience, worker_specialisms(is_primary, categories(slug, name))")
+      .select("user_id, slug, business_name, headline, bio, base_area, travel_radius_miles, years_experience, banner_path, worker_specialisms(is_primary, categories(slug, name))")
       .eq("slug", data.slug)
       .eq("is_published", true)
       .maybeSingle();
     if (!pro) return null;
-    const [{ data: projects }, { data: slots }, { data: reviews }, { data: team }] = await Promise.all([
-      sb.from("portfolio_projects").select("id, title, description, location_text, completed_on, image_paths").eq("worker_id", pro.user_id).order("completed_on", { ascending: false }),
+    const [{ data: projects }, { data: slots }, { data: reviews }, { data: team }, { data: branches }] = await Promise.all([
+      sb.from("portfolio_projects").select("id, title, description, location_text, completed_on, image_paths, video_url").eq("worker_id", pro.user_id).order("completed_on", { ascending: false }),
       sb.from("availability_slots").select("weekday, start_time, end_time").eq("worker_id", pro.user_id).order("weekday"),
       sb.rpc("worker_reviews", { _worker: pro.user_id }),
       sb.from("team_members").select("id, name, role_title, bio").eq("business_id", pro.user_id).order("created_at"),
+      sb.from("branches").select("id, name, area, phone").eq("business_id", pro.user_id).order("created_at"),
     ]);
-    const paths = (projects ?? []).flatMap((p) => p.image_paths);
+    const paths = [...(projects ?? []).flatMap((p) => p.image_paths), ...(pro.banner_path ? [pro.banner_path] : [])];
     const urls: Record<string, string> = {};
     if (paths.length) {
       const { data: signed } = await sb.storage.from("portfolio").createSignedUrls(paths, 60 * 60);
@@ -62,6 +64,8 @@ export const getPro = createServerFn({ method: "GET" })
     }
     return {
       pro,
+      bannerUrl: pro.banner_path ? urls[pro.banner_path] ?? null : null,
+      branches: branches ?? [],
       projects: (projects ?? []).map((p) => ({ ...p, images: p.image_paths.map((x) => urls[x]).filter(Boolean) })),
       slots: slots ?? [],
       team: team ?? [],
