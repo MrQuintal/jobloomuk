@@ -159,10 +159,8 @@ function JobsPage({ uid }: { uid: string }) {
               <p className="mt-3 whitespace-pre-line text-sm">{j.description}</p>
               {resp ? (
                 <ResponseState resp={resp} onChange={() => qc.invalidateQueries({ queryKey: ["open-jobs"] })} />
-              ) : isWorker && canRespondToJob({ status: j.status as JobStatus, customer_id: j.customer_id }, uid) ? (
+              ) : canRespondToJob({ status: j.status as JobStatus, customer_id: j.customer_id }, uid) ? (
                 <Respond jobId={j.id} uid={uid} onDone={() => qc.invalidateQueries({ queryKey: ["open-jobs"] })} />
-              ) : !isWorker ? (
-                <p className="mt-4 text-xs text-muted-foreground">Only professional accounts can respond to jobs.</p>
               ) : null}
             </article>
           );
@@ -173,7 +171,7 @@ function JobsPage({ uid }: { uid: string }) {
 }
 
 function ResponseState({ resp, onChange }: { resp: { id: string; status: string }; onChange: () => void }) {
-  const label: Record<string, string> = { sent: "You've shown interest", accepted: "The customer wants to talk — check Messages", declined: "The customer chose someone else", withdrawn: "You withdrew" };
+  const label: Record<string, string> = { sent: "You've shown interest — continue in Messages", accepted: "The customer wants to talk — check Messages", declined: "The customer chose someone else", withdrawn: "You withdrew" };
   return (
     <div className="mt-4 flex items-center gap-3 text-sm">
       <span className="rounded-full bg-accent px-2.5 py-0.5 text-accent-foreground">{label[resp.status]}</span>
@@ -189,6 +187,7 @@ function ResponseState({ resp, onChange }: { resp: { id: string; status: string 
 }
 
 function Respond({ jobId, uid, onDone }: { jobId: string; uid: string; onDone: () => void }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const templates = useQuery({ queryKey: ["templates", uid], enabled: open, queryFn: async () => (await supabase.from("quote_templates").select("id, title, body").eq("worker_id", uid)).data ?? [] });
@@ -197,10 +196,11 @@ function Respond({ jobId, uid, onDone }: { jobId: string; uid: string; onDone: (
     <form className="mt-4" onSubmit={async (e) => {
       e.preventDefault();
       if (!isValidMessage(msg)) return;
-      const { error } = await supabase.from("job_responses").insert({ job_id: jobId, worker_id: uid, message: msg.trim() });
+      const { data: conv, error } = await supabase.rpc("express_interest", { _job_id: jobId, _body: msg.trim() });
       if (error) { toast.error(error.message); return; }
-      toast.success("Sent to the customer");
+      toast.success("Sent — your conversation is in Messages");
       onDone();
+      if (conv) void navigate({ to: "/messages/$id", params: { id: conv } });
     }}>
       {(templates.data ?? []).length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1">
