@@ -1042,6 +1042,10 @@ export type Database = {
         Args: { _body: string; _worker_id: string }
         Returns: string
       }
+      storage_file_is_public: {
+        Args: { _bucket: string; _name: string }
+        Returns: boolean
+      }
       tier_at_least: { Args: { _t: string; _u: string }; Returns: boolean }
       worker_reviews: {
         Args: { _worker: string }
