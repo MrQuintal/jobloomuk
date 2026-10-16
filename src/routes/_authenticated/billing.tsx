@@ -38,6 +38,9 @@ function Billing() {
     },
   });
   const tier = currentTier(sub.data);
+  const [switching, setSwitching] = useState<string | null>(null);
+  const [polling, setPolling] = useState(false);
+  const qc = useQueryClient();
 
   async function manage() {
     const r = await createPortalSession({ data: { environment: getStripeEnvironment(), returnUrl: window.location.href } });
@@ -45,20 +48,42 @@ function Billing() {
     window.open(r.url, "_blank");
   }
 
+  async function switchTo(target: string) {
+    const label = target.replace("_", " ").replace("monthly", "(monthly)").replace("yearly", "(annual)");
+    if (!confirm(`Switch to ${label}? You'll be charged or credited the difference straight away.`)) return;
+    setSwitching(target);
+    const r = await changePlan({ data: { priceId: target, environment: getStripeEnvironment() } });
+    if ("error" in r) { setSwitching(null); return void toast.error(r.error); }
+    toast.success("Plan changed — updating your account…");
+    setPolling(true);
+    for (let i = 0; i < 10; i++) {
+      await new Promise((res) => setTimeout(res, 2000));
+      const fresh = await qc.fetchQuery({ queryKey: ["subscription", user!.id], queryFn: sub.refetch }).catch(() => null);
+      void fresh;
+      const latest = qc.getQueryData<{ price_id?: string } | null>(["subscription", user!.id]);
+      if (latest?.price_id === target) break;
+    }
+    await sub.refetch();
+    setPolling(false);
+    setSwitching(null);
+  }
+
+  const currentPrice = sub.data?.price_id ?? null;
+
   return (
     <div>
       <PaymentTestModeBanner />
       <PageTitle title="Plan & billing" />
       <p className="mb-6 text-muted-foreground">
-        You're on <strong className="text-foreground capitalize">{tier}</strong>.
+        You're on <strong className="text-foreground capitalize">{tier}</strong>
+        {tier !== "free" && currentPrice && ` (${currentPrice.endsWith("yearly") ? "annual" : "monthly"})`}.
         {sub.data?.cancel_at_period_end && sub.data.current_period_end && ` Cancelled — paid features end on ${new Date(sub.data.current_period_end).toLocaleDateString("en-GB")}.`}
         {sub.data?.status === "past_due" && " Your last payment failed — please update your card."}
       </p>
       {session_id && tier === "free" && <p className="mb-6 text-sm">Confirming your payment…</p>}
+      {polling && <p className="mb-6 text-sm">Updating your plan…</p>}
 
-      {tier !== "free" ? (
-        <Button onClick={manage}>Manage billing, change or cancel plan</Button>
-      ) : priceId ? (
+      {priceId && tier === "free" ? (
         <div className="rounded-3xl border border-border bg-card p-4">
           <EmbeddedCheckoutProvider
             stripe={getStripe()}
@@ -84,19 +109,38 @@ function Billing() {
             ))}
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            {(["pro", "business"] as const).map((t) => (
-              <div key={t} className="flex flex-col rounded-3xl border border-border bg-card p-6">
-                <h2 className="text-2xl font-medium capitalize">{t}</h2>
-                <p className="text-sm text-muted-foreground">{PLAN_FEATURES[t].tagline}</p>
-                <p className="mt-4 font-display text-3xl">{formatPence(PRICES_PENCE[t][interval])}<span className="text-base text-muted-foreground">/{interval}</span></p>
-                <ul className="mt-4 flex flex-1 flex-col gap-1.5 text-sm">
-                  {PLAN_FEATURES[t].features.slice(0, 6).map((f) => <li key={f} className="flex gap-2"><Check className="size-4 shrink-0 text-bloom" />{f}</li>)}
-                </ul>
-                <Button className="mt-6" onClick={() => setPriceId(PRICE_IDS[t][interval])}>Choose {t}</Button>
-              </div>
-            ))}
+            {(["pro", "business"] as const).map((t) => {
+              const pid = PRICE_IDS[t][interval];
+              const isCurrent = tier !== "free" && currentPrice === pid;
+              const isUpgrade = tier === "pro" && t === "business";
+              return (
+                <div key={t} className={`flex flex-col rounded-3xl border bg-card p-6 ${isCurrent ? "border-bloom" : "border-border"}`}>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-medium capitalize">{t}</h2>
+                    {isCurrent && <span className="rounded-full bg-bloom px-3 py-1 text-xs text-bloom-foreground">Current plan</span>}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{PLAN_FEATURES[t].tagline}</p>
+                  <p className="mt-4 font-display text-3xl">{formatPence(PRICES_PENCE[t][interval])}<span className="text-base text-muted-foreground">/{interval}</span></p>
+                  <ul className="mt-4 flex flex-1 flex-col gap-1.5 text-sm">
+                    {PLAN_FEATURES[t].features.slice(0, 6).map((f) => <li key={f} className="flex gap-2"><Check className="size-4 shrink-0 text-bloom" />{f}</li>)}
+                  </ul>
+                  {tier === "free" ? (
+                    <Button className="mt-6" onClick={() => setPriceId(pid)}>Choose {t}</Button>
+                  ) : isCurrent ? (
+                    <Button className="mt-6" variant="outline" disabled>Your current plan</Button>
+                  ) : (
+                    <Button className="mt-6" variant={isUpgrade ? "default" : "outline"} disabled={!!switching} onClick={() => switchTo(pid)}>
+                      {switching === pid ? "Switching…" : isUpgrade ? "Upgrade to Business" : t === tier ? `Switch to ${interval === "year" ? "annual" : "monthly"}` : `Switch to ${t}`}
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <p className="mt-6 text-xs text-muted-foreground">Plan features are rolling out in stages. Subscriptions never buy reviews, badges or guaranteed jobs.</p>
+          {tier !== "free" && (
+            <Button variant="ghost" className="mt-6" onClick={manage}>Manage payment card, invoices or cancel</Button>
+          )}
+          <p className="mt-6 text-xs text-muted-foreground">Changes apply straight away; you're charged or credited only the difference. Subscriptions never buy reviews, badges or guaranteed jobs.</p>
         </>
       )}
     </div>
