@@ -11,9 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import type { JobStatus } from "@/lib/rules/marketplace";
+import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_authenticated/customer")({
-  head: () => ({ meta: [{ title: "My jobs | Jobloom" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/customer", "My jobs", "Manage your Jobloom job posts and responses from independent UK professionals.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: () => (
     <RoleGate allow={["customer"]}>
       <CustomerPage />
@@ -60,6 +64,7 @@ function CustomerPage() {
   return (
     <>
       <PageTitle title="My jobs">Post the work you need done. Interested professionals will respond, and you choose who to talk to.</PageTitle>
+      <p className="mb-6 max-w-4xl text-sm text-muted-foreground">Jobloom does not vet professionals or verify credentials. Before agreeing to work, ask for suitable insurance and qualifications, check any required trade registration with the relevant register, and agree the scope and price in writing.</p>
       <div className="grid max-w-4xl gap-6">
         <PostJob uid={uid} onDone={refresh} />
         {jobs.isLoading ? <p className="text-muted-foreground">Loading…</p> : jobs.data?.jobs.length === 0 ? (
