@@ -9,6 +9,7 @@ import { RoleGate } from "@/components/app/RoleGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Field } from "@/components/app/Field";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
@@ -293,15 +294,6 @@ function Availability({ slots }: { slots: WorkerData["slots"] }) {
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-export function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="grid gap-1.5">
-      <Label>{label}</Label>
-      {children}
     </div>
   );
 }
