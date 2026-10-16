@@ -11,6 +11,12 @@ import { useTier } from "./tools";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { canRespondToJob, isValidMessage, type JobStatus } from "@/lib/rules/marketplace";
+import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
+
+function PosterAvatar({ id }: { id: string }) {
+  const av = useAvatars([id]);
+  return <UserAvatar url={av[id]} name="Customer" className="h-10 w-10 shrink-0" />;
+}
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   head: () => ({ meta: [{ title: "Find jobs | Jobloom" }, { name: "robots", content: "noindex" }] }),
@@ -88,7 +94,10 @@ function JobsPage() {
           const resp = q.data!.mine.find((r) => r.job_id === j.id);
           return (
             <article key={j.id} className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="text-xl font-medium">{j.title} {pro && isAlert(j) && <span className="ml-2 rounded-full bg-bloom px-2 py-0.5 align-middle text-xs text-bloom-foreground">New match</span>}</h2>
+              <div className="flex items-center gap-3">
+                <PosterAvatar id={j.customer_id} />
+                <h2 className="text-xl font-medium">{j.title} {pro && isAlert(j) && <span className="ml-2 rounded-full bg-bloom px-2 py-0.5 align-middle text-xs text-bloom-foreground">New match</span>}</h2>
+              </div>
               <p className="text-sm text-muted-foreground">{[j.categories?.name, j.area, j.timing, j.budget_note].filter(Boolean).join(" · ")}</p>
               <p className="mt-3 whitespace-pre-line text-sm">{j.description}</p>
               {resp ? (

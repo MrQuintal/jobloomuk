@@ -43,6 +43,20 @@
       "when": 1792169901243,
       "tag": "0005_add_profile_phone",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792170060915,
+      "tag": "0006_avatars",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792170074039,
+      "tag": "0007_avatars_read",
+      "breakpoints": true
     }
   ]
 }

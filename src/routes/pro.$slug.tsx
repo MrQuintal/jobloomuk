@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { WEEKDAYS, isValidMessage } from "@/lib/rules/marketplace";
 import { ReportButton } from "@/components/app/ReportButton";
+import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 
 const proQ = (slug: string) => queryOptions({ queryKey: ["pro", slug], queryFn: () => getPro({ data: { slug } }) });
 
@@ -50,13 +51,17 @@ function Pro() {
   if (!data) return null;
   const { pro, projects, slots, reviews, summary, team, bannerUrl, branches } = data;
   useEffect(() => { void supabase.from("profile_events").insert({ worker_id: pro.user_id, kind: "view" }); }, [pro.user_id]);
+  const av = useAvatars([pro.user_id]);
   return (
     <PageShell>
       {bannerUrl && <img src={bannerUrl} alt={`${pro.business_name} banner`} className="h-48 w-full object-cover md:h-72" />}
       <section className="container-page grid gap-10 py-14 md:grid-cols-[1fr_22rem]">
         <div>
           <p className="eyebrow">{pro.worker_specialisms.map((s) => s.categories?.name).filter(Boolean).join(" · ")}</p>
-          <h1 className="mt-3 text-4xl font-medium md:text-5xl">{pro.business_name}</h1>
+          <div className="mt-3 flex items-center gap-4">
+            <UserAvatar url={av[pro.user_id]} name={pro.business_name} className="h-16 w-16 md:h-20 md:w-20" />
+            <h1 className="text-4xl font-medium md:text-5xl">{pro.business_name}</h1>
+          </div>
           {pro.headline && <p className="mt-3 text-lg text-muted-foreground">{pro.headline}</p>}
           <div className="mt-4 flex flex-wrap gap-4 text-sm">
             {pro.phone && <span className="flex items-center gap-1"><Phone className="size-4" /> {pro.phone}</span>}
