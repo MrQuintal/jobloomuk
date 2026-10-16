@@ -8,7 +8,8 @@ import { RoleGate } from "@/components/app/RoleGate";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useTier } from "./tools";
+import { useTier } from "./_authenticated/tools";
+import { PageShell } from "@/components/site/PageShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { canRespondToJob, isValidMessage, type JobStatus } from "@/lib/rules/marketplace";
@@ -23,7 +24,7 @@ function PosterAvatar({ id }: { id: string }) {
   return <UserAvatar url={av[id]} name="Customer" className="h-10 w-10 shrink-0" />;
 }
 
-export const Route = createFileRoute("/_authenticated/jobs")({
+export const Route = createFileRoute("/jobs")({
   staticData: { sitemap: false },
   head: () => {
     const head = pageHead("/jobs", "Find jobs", "Browse open UK customer jobs and manage your professional responses on Jobloom.");
