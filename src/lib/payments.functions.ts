@@ -55,7 +55,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       const customerId = await resolveOrCreateCustomer(stripe, { email: user?.email ?? undefined, userId });
 
       const session = await stripe.checkout.sessions.create({
-        line_items: [{ price: prices.data[0].id, quantity: 1 }],
+        line_items: [{ price: prices.data[0]!.id, quantity: 1 }],
         mode: "subscription",
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
