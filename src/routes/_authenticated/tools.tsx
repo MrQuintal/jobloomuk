@@ -32,6 +32,7 @@ const card = "rounded-2xl border border-border bg-card p-6";
 export function useTier(uid: string) {
   return useQuery({
     queryKey: ["tier", uid],
+    refetchInterval: 15000,
     queryFn: async () => ((await supabase.rpc("plan_tier", { _u: uid })).data ?? "free") as PlanTier,
   });
 }

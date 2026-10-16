@@ -10,4 +10,4 @@
 - [x] Custom domain — jobloom.co.uk and www.jobloom.co.uk connected and verified
 - [x] Publish launch — owner authorised publication; legal address update published
 - [x] Owner super-admin access — verified requesting account promoted; existing professional role retained
-- [ ] Super-admin-only Business access grant in Users, with audited enforcement and verification
+- [x] Super-admin-only Business access grant in Users; grant/remove tested on owner account, Business tools and billing notice verified, audit confirmed

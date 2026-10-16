@@ -73,7 +73,7 @@ function UsersAdmin() {
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["admin-business-grants"] }),
         qc.invalidateQueries({ queryKey: ["business-access"] }),
-        qc.invalidateQueries({ queryKey: ["plan-tier"] }),
+        qc.invalidateQueries({ queryKey: ["tier"] }),
         qc.invalidateQueries({ queryKey: ["admin-audit"] }),
       ]);
       toast.success(grant ? "Business access granted" : "Complimentary Business access removed");
