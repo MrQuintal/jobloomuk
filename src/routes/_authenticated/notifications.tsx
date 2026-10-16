@@ -48,7 +48,7 @@ function Notifications() {
   }
   async function open(n: { id: string; link: string | null; read_at: string | null }) {
     if (!n.read_at) await markOne(n.id);
-    if (n.link) navigate({ to: n.link });
+    if (n.link) navigate({ href: n.link });
   }
   const unread = q.data?.filter((n) => !n.read_at).length ?? 0;
 
