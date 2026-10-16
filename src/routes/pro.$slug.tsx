@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { WEEKDAYS, isValidMessage } from "@/lib/rules/marketplace";
 import { ReportButton } from "@/components/app/ReportButton";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
+import { RatingBreakdown } from "@/components/app/StarRating";
 
 const proQ = (slug: string) => queryOptions({ queryKey: ["pro", slug], queryFn: () => getPro({ data: { slug } }) });
 
@@ -117,7 +118,7 @@ function Pro() {
               {reviews.map((r) => (
                 <li key={r.id} className="rounded-2xl border border-border bg-card p-5">
                   <p className="text-sm font-medium">{r.reviewer} · {new Date(r.created_at).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Quality {r.quality} · Reliability {r.reliability} · Communication {r.communication} · Value {r.value}</p>
+                  <div className="mt-2"><RatingBreakdown r={r} /></div>
                   <p className="mt-2 text-sm whitespace-pre-line">{r.body}</p>
                   {r.worker_reply && <p className="mt-3 border-l-2 border-border pl-3 text-sm text-muted-foreground"><span className="font-medium">Reply:</span> {r.worker_reply}</p>}
                   <div className="mt-2"><ReportButton type="review" id={r.id} /></div>
