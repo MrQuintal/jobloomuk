@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Download, MapPin } from "lucide-react";
+import { Download, MapPin, Phone } from "lucide-react";
 import { ServiceAreaMap } from "@/components/app/ServiceAreaMap";
 import { videoEmbedUrl } from "@/lib/rules/media";
 import { toast } from "sonner";
@@ -59,6 +59,7 @@ function Pro() {
           <h1 className="mt-3 text-4xl font-medium md:text-5xl">{pro.business_name}</h1>
           {pro.headline && <p className="mt-3 text-lg text-muted-foreground">{pro.headline}</p>}
           <div className="mt-4 flex flex-wrap gap-4 text-sm">
+            {pro.phone && <span className="flex items-center gap-1"><Phone className="size-4" /> {pro.phone}</span>}
             {pro.base_area && <span className="flex items-center gap-1"><MapPin className="size-4" /> {pro.base_area}, travels up to {pro.travel_radius_miles} miles</span>}
             {pro.years_experience != null && <span>{pro.years_experience} years' experience</span>}
           </div>
@@ -119,24 +120,26 @@ function Pro() {
             </ul>
           )}
         </div>
-        <aside className="space-y-6 print:hidden">
-          <ContactBox workerId={pro.user_id} name={pro.business_name} />
+        <aside className="space-y-6">
+          <div className="print:hidden"><ContactBox workerId={pro.user_id} name={pro.business_name} /></div>
           <div className="rounded-2xl border border-border bg-card p-5">
             <h2 className="font-medium">Usual availability</h2>
             {slots.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Not set — ask in a message.</p> : (
               <ul className="mt-2 space-y-1 text-sm">{slots.map((s, i) => <li key={i}>{WEEKDAYS[s.weekday]} {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}</li>)}</ul>
             )}
           </div>
-          {pro.base_area && <ServiceAreaMap area={pro.base_area} radiusMiles={pro.travel_radius_miles} />}
+          {pro.base_area && <div className="print:hidden"><ServiceAreaMap area={pro.base_area} radiusMiles={pro.travel_radius_miles} /></div>}
           {branches.length > 0 && (
             <div className="rounded-2xl border border-border bg-card p-5">
               <h2 className="font-medium">Branches</h2>
               <ul className="mt-2 space-y-2 text-sm">{branches.map((b) => <li key={b.id}><strong>{b.name}</strong> · {b.area}{b.phone ? ` · ${b.phone}` : ""}</li>)}</ul>
             </div>
           )}
-          <Button variant="outline" className="w-full" onClick={() => window.print()}><Download /> Download profile PDF</Button>
-          <p className="text-xs text-muted-foreground">Jobloom doesn't handle payments. You agree the price and pay the professional directly.</p>
-          <ReportButton type="profile" id={pro.user_id} label="Report this profile" />
+          <div className="space-y-4 print:hidden">
+            <Button variant="outline" className="w-full" onClick={() => window.print()}><Download /> Download profile PDF</Button>
+            <p className="text-xs text-muted-foreground">Jobloom doesn't handle payments. You agree the price and pay the professional directly.</p>
+            <ReportButton type="profile" id={pro.user_id} label="Report this profile" />
+          </div>
         </aside>
       </section>
     </PageShell>
