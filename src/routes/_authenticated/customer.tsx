@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import type { JobStatus } from "@/lib/rules/marketplace";
 import { pageHead } from "@/lib/seo";
+import { PricingGuidance } from "@/components/app/PricingGuidance";
 
 export const Route = createFileRoute("/_authenticated/customer")({
   head: () => {
@@ -29,11 +30,12 @@ const STATUS_LABEL: Record<JobStatus, string> = { open: "Open", paused: "Paused"
 
 function CustomerPage() {
   const { user } = useAuth();
-  const uid = user!.id;
+  const uid = user?.id ?? "";
   const qc = useQueryClient();
   const navigate = useNavigate();
   const jobs = useQuery({
     queryKey: ["my-jobs", uid],
+    enabled: Boolean(uid),
     queryFn: async () => {
       const { data: js } = await supabase.from("jobs").select("*, categories(name)").eq("customer_id", uid).order("created_at", { ascending: false });
       const ids = (js ?? []).map((j) => j.id);
@@ -114,7 +116,7 @@ function CustomerPage() {
 }
 
 function PostJob({ uid, onDone }: { uid: string; onDone: () => void }) {
-  const cats = useQuery({ queryKey: ["cats-client"], queryFn: async () => (await supabase.from("categories").select("id, name").eq("is_active", true).order("sort_order")).data ?? [] });
+  const cats = useQuery({ queryKey: ["cats-client"], queryFn: async () => (await supabase.from("categories").select("id, name, slug").eq("is_active", true).order("sort_order")).data ?? [] });
   const empty = { title: "", description: "", category_id: "", area: "", timing: "", budget_note: "" };
   const [f, setF] = useState(empty);
   const [open, setOpen] = useState(false);
@@ -145,7 +147,7 @@ function PostJob({ uid, onDone }: { uid: string; onDone: () => void }) {
         <div className="md:col-span-2"><Label>What do you need done?</Label><Input value={f.title} onChange={set("title")} maxLength={120} placeholder="e.g. Replace a leaking kitchen tap" /></div>
         <div className="md:col-span-2"><Label>Details</Label><Textarea rows={4} value={f.description} onChange={set("description")} maxLength={4000} /></div>
         <div><Label>Type of work</Label>
-          <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={f.category_id} onChange={set("category_id")}>
+          <select aria-label="Type of work" className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={f.category_id} onChange={set("category_id")}>
             <option value="">Not sure</option>
             {(cats.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
@@ -153,6 +155,7 @@ function PostJob({ uid, onDone }: { uid: string; onDone: () => void }) {
         <div><Label>Area (town or postcode district)</Label><Input value={f.area} onChange={set("area")} maxLength={80} placeholder="e.g. LS6" /></div>
         <div><Label>When</Label><Input value={f.timing} onChange={set("timing")} maxLength={80} placeholder="e.g. Within 2 weeks" /></div>
         <div><Label>Budget guide (optional)</Label><Input value={f.budget_note} onChange={set("budget_note")} maxLength={80} /></div>
+        <PricingGuidance slug={cats.data?.find((category) => category.id === f.category_id)?.slug} name={cats.data?.find((category) => category.id === f.category_id)?.name} />
       </div>
       <p className="mt-4 text-xs text-muted-foreground">Don't include your full address or phone number. You agree price and payment directly with the professional — Jobloom never takes payment.</p>
       <div className="mt-4 flex gap-2">
