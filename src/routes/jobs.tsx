@@ -26,6 +26,7 @@ function PosterAvatar({ id }: { id: string }) {
 
 export const Route = createFileRoute("/jobs")({
   ssr: false,
+  staticData: { sitemap: true },
   head: () => pageHead("/jobs", "Find jobs", "Browse open UK customer jobs by trade and distance on Jobloom."),
   component: () => (
     <PageShell>
