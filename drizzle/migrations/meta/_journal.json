@@ -29,6 +29,13 @@
       "when": 1792166950431,
       "tag": "0003_plan_features",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792167540689,
+      "tag": "0004_profile_extras_branches_alerts",
+      "breakpoints": true
     }
   ]
 }

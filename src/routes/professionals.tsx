@@ -36,6 +36,7 @@ function Pros() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {pros.map((p) => (
               <Link key={p.user_id} to="/pro/$slug" params={{ slug: p.slug }} className="rounded-2xl border border-border bg-card p-6 transition-shadow hover:shadow-md">
+                {p.sponsored && <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Sponsored</p>}
                 <h2 className="text-xl font-medium">{p.business_name}</h2>
                 {p.headline && <p className="mt-1 text-sm text-muted-foreground">{p.headline}</p>}
                 {p.base_area && <p className="mt-3 flex items-center gap-1 text-sm"><MapPin className="size-4" /> {p.base_area} · up to {p.travel_radius_miles} miles</p>}

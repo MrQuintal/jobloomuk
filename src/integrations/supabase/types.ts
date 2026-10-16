@@ -106,6 +106,41 @@ export type Database = {
           },
         ]
       }
+      branches: {
+        Row: {
+          area: string
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          area: string
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          area?: string
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branches_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "worker_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -431,6 +466,7 @@ export type Database = {
           image_paths: string[]
           location_text: string | null
           title: string
+          video_url: string | null
           worker_id: string
         }
         Insert: {
@@ -442,6 +478,7 @@ export type Database = {
           image_paths?: string[]
           location_text?: string | null
           title: string
+          video_url?: string | null
           worker_id: string
         }
         Update: {
@@ -453,6 +490,7 @@ export type Database = {
           image_paths?: string[]
           location_text?: string | null
           title?: string
+          video_url?: string | null
           worker_id?: string
         }
         Relationships: [
@@ -855,12 +893,14 @@ export type Database = {
       }
       worker_profiles: {
         Row: {
+          banner_path: string | null
           base_area: string | null
           bio: string | null
           business_name: string
           created_at: string
           headline: string | null
           is_published: boolean
+          is_sponsored: boolean
           slug: string
           travel_radius_miles: number
           updated_at: string
@@ -868,12 +908,14 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          banner_path?: string | null
           base_area?: string | null
           bio?: string | null
           business_name: string
           created_at?: string
           headline?: string | null
           is_published?: boolean
+          is_sponsored?: boolean
           slug: string
           travel_radius_miles?: number
           updated_at?: string
@@ -881,12 +923,14 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          banner_path?: string | null
           base_area?: string | null
           bio?: string | null
           business_name?: string
           created_at?: string
           headline?: string | null
           is_published?: boolean
+          is_sponsored?: boolean
           slug?: string
           travel_radius_miles?: number
           updated_at?: string
