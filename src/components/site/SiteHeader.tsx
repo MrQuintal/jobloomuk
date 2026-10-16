@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { Logo } from "./Logo";
 
 const NAV = [
+  { to: "/professionals", label: "Find professionals" },
   { to: "/how-it-works", label: "How it works" },
   { to: "/for-customers", label: "For customers" },
   { to: "/for-professionals", label: "For professionals" },

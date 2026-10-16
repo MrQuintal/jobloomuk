@@ -1,0 +1,128 @@
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { MapPin } from "lucide-react";
+import { toast } from "sonner";
+import { PageShell } from "@/components/site/PageShell";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { getPro } from "@/lib/public.functions";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { WEEKDAYS, isValidMessage } from "@/lib/rules/marketplace";
+
+const proQ = (slug: string) => queryOptions({ queryKey: ["pro", slug], queryFn: () => getPro({ data: { slug } }) });
+
+export const Route = createFileRoute("/pro/$slug")({
+  loader: async ({ context, params }) => {
+    const d = await context.queryClient.ensureQueryData(proQ(params.slug));
+    if (!d) throw notFound();
+    return { name: d.pro.business_name, headline: d.pro.headline };
+  },
+  head: ({ loaderData, params }) => {
+    const t = loaderData ? `${loaderData.name} | Jobloom` : "Professional | Jobloom";
+    const d = loaderData?.headline || "See this professional's portfolio on Jobloom.";
+    return {
+      meta: [
+        { title: t },
+        { name: "description", content: d },
+        { property: "og:title", content: t },
+        { property: "og:description", content: d },
+        { property: "og:type", content: "profile" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(loaderData ? [] : [{ name: "robots", content: "noindex" }]),
+      ],
+      links: [{ rel: "canonical", href: `/pro/${params.slug}` }],
+    };
+  },
+  notFoundComponent: () => (
+    <PageShell><div className="container-page py-24"><h1 className="text-3xl">Professional not found</h1><p className="mt-2 text-muted-foreground">This profile may not be published yet.</p><Link to="/professionals" search={{}} className="mt-4 inline-block underline">Browse professionals</Link></div></PageShell>
+  ),
+  component: Pro,
+});
+
+function Pro() {
+  const { slug } = Route.useParams();
+  const { data } = useSuspenseQuery(proQ(slug));
+  if (!data) return null;
+  const { pro, projects, slots } = data;
+  return (
+    <PageShell>
+      <section className="container-page grid gap-10 py-14 md:grid-cols-[1fr_22rem]">
+        <div>
+          <p className="eyebrow">{pro.worker_specialisms.map((s) => s.categories?.name).filter(Boolean).join(" · ")}</p>
+          <h1 className="mt-3 text-4xl font-medium md:text-5xl">{pro.business_name}</h1>
+          {pro.headline && <p className="mt-3 text-lg text-muted-foreground">{pro.headline}</p>}
+          <div className="mt-4 flex flex-wrap gap-4 text-sm">
+            {pro.base_area && <span className="flex items-center gap-1"><MapPin className="size-4" /> {pro.base_area}, travels up to {pro.travel_radius_miles} miles</span>}
+            {pro.years_experience != null && <span>{pro.years_experience} years' experience</span>}
+          </div>
+          {pro.bio && <p className="mt-8 whitespace-pre-line leading-relaxed">{pro.bio}</p>}
+
+          <h2 className="mt-14 text-2xl font-medium">Portfolio</h2>
+          {projects.length === 0 ? <p className="mt-3 text-muted-foreground">No projects added yet.</p> : (
+            <div className="mt-6 grid gap-6">
+              {projects.map((p) => (
+                <article key={p.id} className="rounded-2xl border border-border bg-card p-5">
+                  {p.images.length > 0 && (
+                    <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-3">
+                      {p.images.map((u) => <img key={u} src={u} alt={p.title} loading="lazy" className="aspect-[4/3] w-full rounded-lg object-cover" />)}
+                    </div>
+                  )}
+                  <h3 className="text-lg font-medium">{p.title}</h3>
+                  <p className="text-sm text-muted-foreground">{[p.location_text, p.completed_on && new Date(p.completed_on).toLocaleDateString("en-GB", { month: "long", year: "numeric" })].filter(Boolean).join(" · ")}</p>
+                  {p.description && <p className="mt-2 text-sm">{p.description}</p>}
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+        <aside className="space-y-6">
+          <ContactBox workerId={pro.user_id} name={pro.business_name} />
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="font-medium">Usual availability</h2>
+            {slots.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">Not set — ask in a message.</p> : (
+              <ul className="mt-2 space-y-1 text-sm">{slots.map((s, i) => <li key={i}>{WEEKDAYS[s.weekday]} {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}</li>)}</ul>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">Jobloom doesn't handle payments. You agree the price and pay the professional directly.</p>
+        </aside>
+      </section>
+    </PageShell>
+  );
+}
+
+function ContactBox({ workerId, name }: { workerId: string; name: string }) {
+  const { user, roles, ready } = useAuth();
+  const navigate = useNavigate();
+  const [body, setBody] = useState("");
+  const [busy, setBusy] = useState(false);
+  if (!ready) return null;
+  if (!user) {
+    return (
+      <div className="rounded-2xl bg-secondary p-5">
+        <p className="font-medium">Want to contact {name}?</p>
+        <Button asChild variant="bloom" className="mt-3 w-full"><Link to="/auth" search={{ mode: "signin" }}>Sign in to message</Link></Button>
+      </div>
+    );
+  }
+  if (!roles.includes("customer") || user.id === workerId) return null;
+  return (
+    <form
+      className="rounded-2xl bg-secondary p-5"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!isValidMessage(body)) return;
+        setBusy(true);
+        const { data, error } = await supabase.rpc("start_conversation_with_worker", { _worker_id: workerId, _body: body.trim() });
+        setBusy(false);
+        if (error) { toast.error(error.message); return; }
+        navigate({ to: "/messages/$id", params: { id: data } });
+      }}
+    >
+      <p className="font-medium">Message {name}</p>
+      <Textarea className="mt-3 bg-background" rows={4} maxLength={4000} value={body} onChange={(e) => setBody(e.target.value)} placeholder="Describe what you need done…" />
+      <Button type="submit" variant="bloom" className="mt-3 w-full" disabled={busy || !isValidMessage(body)}>Send message</Button>
+    </form>
+  );
+}

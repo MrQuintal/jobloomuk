@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { LayoutDashboard, Hammer, Users, ScrollText, LogOut, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Hammer, Users, ScrollText, LogOut, ClipboardList, Search, MessageSquare } from "lucide-react";
 import { Logo } from "@/components/site/Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -12,9 +12,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const links = [
     roles.includes("customer") && { to: "/customer", label: "My jobs", icon: ClipboardList },
     roles.includes("worker") && { to: "/worker", label: "My business", icon: Hammer },
+    roles.includes("worker") && { to: "/jobs", label: "Find jobs", icon: Search },
+    (roles.includes("customer") || roles.includes("worker")) && { to: "/messages", label: "Messages", icon: MessageSquare },
     isAdmin(roles) && { to: "/admin/users", label: "Users", icon: Users },
     isAdmin(roles) && { to: "/admin/audit", label: "Audit log", icon: ScrollText },
-  ].filter(Boolean) as { to: "/customer" | "/worker" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard }[];
+  ].filter(Boolean) as { to: "/customer" | "/worker" | "/jobs" | "/messages" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard }[];
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
