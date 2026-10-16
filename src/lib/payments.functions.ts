@@ -91,3 +91,40 @@ export const createPortalSession = createServerFn({ method: "POST" })
       return { error: getStripeErrorMessage(error) };
     }
   });
+
+// Switch an existing subscription to another plan straight away, with a fair
+// prorated charge or credit. The signed webhook then updates our records.
+export const changePlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { priceId: string; environment: StripeEnv }) => {
+    if (!ALLOWED.has(data.priceId)) throw new Error("Invalid plan");
+    if (data.environment !== "sandbox" && data.environment !== "live") throw new Error("Invalid environment");
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    const { supabase, userId } = context;
+    const { data: sub } = await supabase
+      .from("subscriptions").select("stripe_subscription_id,price_id")
+      .eq("user_id", userId).eq("environment", data.environment)
+      .in("status", ["active", "trialing", "past_due"])
+      .order("created_at", { ascending: false }).limit(1).maybeSingle();
+    if (!sub?.stripe_subscription_id) return { error: "No active plan to change" };
+    if (sub.price_id === data.priceId) return { error: "You're already on this plan" };
+    try {
+      const stripe = createStripeClient(data.environment);
+      const prices = await stripe.prices.list({ lookup_keys: [data.priceId] });
+      const price = prices.data[0];
+      if (!price) return { error: "Plan not found" };
+      const current = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
+      const item = current.items.data[0];
+      if (!item) return { error: "Subscription has no items" };
+      await stripe.subscriptions.update(sub.stripe_subscription_id, {
+        items: [{ id: item.id, price: price.id }],
+        proration_behavior: "always_invoice",
+        cancel_at_period_end: false,
+      });
+      return { ok: true };
+    } catch (error) {
+      return { error: getStripeErrorMessage(error) };
+    }
+  });
