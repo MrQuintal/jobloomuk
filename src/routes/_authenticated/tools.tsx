@@ -231,3 +231,101 @@ function Team({ uid }: { uid: string }) {
     </div>
   );
 }
+
+function Branding({ uid }: { uid: string }) {
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["branding", uid], queryFn: async () => (await supabase.from("worker_profiles").select("banner_path, is_sponsored").eq("user_id", uid).maybeSingle()).data });
+  const [busy, setBusy] = useState(false);
+  if (q.isLoading) return null;
+  if (!q.data) return <p className="text-sm text-muted-foreground">Create your profile on <Link to="/worker" className="underline">My profile</Link> first.</p>;
+  const current = q.data;
+  const refresh = () => void qc.invalidateQueries({ queryKey: ["branding"] });
+  return (
+    <div className="grid gap-4 text-sm">
+      <div>
+        <p className="font-medium">Profile banner</p>
+        <p className="text-muted-foreground">{current.banner_path ? "Banner is showing on your public profile." : "Wide photo shown across the top of your profile (under 8 MB)."}</p>
+        <Input className="mt-2" type="file" accept="image/*" disabled={busy} onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          if (!file.type.startsWith("image/") || file.size > 8 * 1024 * 1024) { toast.error("Banner must be an image under 8 MB"); return; }
+          setBusy(true);
+          const path = `${uid}/banner-${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
+          const up = await supabase.storage.from("portfolio").upload(path, file, { contentType: file.type });
+          if (up.error) { setBusy(false); toast.error(up.error.message); return; }
+          if (current.banner_path) await supabase.storage.from("portfolio").remove([current.banner_path]);
+          await supabase.from("worker_profiles").update({ banner_path: path }).eq("user_id", uid);
+          setBusy(false); toast.success("Banner updated"); refresh();
+        }} />
+      </div>
+      <label className="flex items-start gap-3">
+        <input type="checkbox" className="mt-1" checked={current.is_sponsored} onChange={async (e) => {
+          await supabase.from("worker_profiles").update({ is_sponsored: e.target.checked }).eq("user_id", uid); refresh();
+        }} />
+        <span>Show me in sponsored places on Find professionals. Sponsored spots are always labelled "Sponsored", limited to two per page, and never affect reviews or your normal ranking.</span>
+      </label>
+    </div>
+  );
+}
+
+function Branches({ uid }: { uid: string }) {
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["branches", uid], queryFn: async () => (await supabase.from("branches").select("*").eq("business_id", uid).order("created_at")).data ?? [] });
+  const [f, setF] = useState({ name: "", area: "", phone: "" });
+  return (
+    <div className="grid gap-3">
+      {q.data?.map((b) => (
+        <div key={b.id} className="flex items-center justify-between rounded-xl bg-secondary p-3 text-sm">
+          <span><strong>{b.name}</strong> · {b.area}{b.phone ? ` · ${b.phone}` : ""}</span>
+          <Button size="icon" variant="ghost" aria-label="Remove branch" onClick={async () => { await supabase.from("branches").delete().eq("id", b.id); void qc.invalidateQueries({ queryKey: ["branches"] }); }}><Trash2 /></Button>
+        </div>
+      ))}
+      <div className="grid gap-2 md:grid-cols-[1fr_1fr_1fr_auto]">
+        <Input placeholder="Branch name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+        <Input placeholder="Town or postcode area" value={f.area} onChange={(e) => setF({ ...f, area: e.target.value })} />
+        <Input placeholder="Phone (optional)" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
+        <Button disabled={f.name.trim().length < 2 || f.area.trim().length < 2} onClick={async () => {
+          const { error } = await supabase.from("branches").insert({ business_id: uid, name: f.name.trim(), area: f.area.trim(), phone: f.phone.trim() || null });
+          if (error) { toast.error(error.message); return; }
+          setF({ name: "", area: "", phone: "" }); void qc.invalidateQueries({ queryKey: ["branches"] });
+        }}>Add</Button>
+      </div>
+      <p className="text-xs text-muted-foreground">Branches show on your public profile.</p>
+    </div>
+  );
+}
+
+function Calendar({ uid }: { uid: string }) {
+  const q = useQuery({
+    queryKey: ["team-calendar", uid],
+    queryFn: async () => {
+      const { data: convs } = await supabase.from("conversations").select("id, jobs(title)").eq("worker_id", uid);
+      const ids = (convs ?? []).map((c) => c.id);
+      if (!ids.length) return { rows: [], convs: [], stages: [], team: [] };
+      const [{ data: rows }, { data: stages }, { data: team }] = await Promise.all([
+        supabase.from("booking_requests").select("id, conversation_id, starts_at, status").in("conversation_id", ids).in("status", ["pending", "accepted"]).gte("starts_at", new Date().toISOString()).order("starts_at"),
+        supabase.from("lead_stages").select("conversation_id, assignee_id").eq("worker_id", uid),
+        supabase.from("team_members").select("id, name").eq("business_id", uid),
+      ]);
+      return { rows: rows ?? [], convs: convs ?? [], stages: stages ?? [], team: team ?? [] };
+    },
+  });
+  if (!q.data) return null;
+  const { rows, convs, stages, team } = q.data;
+  if (!rows.length) return <p className="text-sm text-muted-foreground">No upcoming visits. Requested and accepted visits from your messages appear here, with whoever the lead is assigned to.</p>;
+  return (
+    <ul className="grid gap-2 text-sm">
+      {rows.map((r) => {
+        const who = team.find((m) => m.id === stages.find((s) => s.conversation_id === r.conversation_id)?.assignee_id)?.name;
+        return (
+          <li key={r.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3">
+            <span className="font-medium">{new Date(r.starts_at).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+            <Link to="/messages/$id" params={{ id: r.conversation_id }} className="flex-1 underline">{convs.find((c) => c.id === r.conversation_id)?.jobs?.title ?? "Direct enquiry"}</Link>
+            <span className="text-muted-foreground">{who ?? "Unassigned"}</span>
+            <span className="rounded-full bg-secondary px-2 py-0.5 text-xs capitalize">{r.status}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
