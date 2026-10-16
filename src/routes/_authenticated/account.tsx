@@ -7,6 +7,44 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageTitle } from "@/components/app/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
+
+function PhotoSection({ uid, name }: { uid: string; name: string }) {
+  const qc = useQueryClient();
+  const av = useAvatars([uid]);
+  const [busy, setBusy] = useState(false);
+  async function upload(file: File) {
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5MB"); return; }
+    setBusy(true);
+    const path = `${uid}/${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
+    const up = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    if (up.error) { toast.error(up.error.message); setBusy(false); return; }
+    const { error } = await supabase.from("profiles").update({ avatar_url: path }).eq("id", uid);
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Profile photo updated");
+    qc.invalidateQueries({ queryKey: ["avatars"] });
+  }
+  async function remove() {
+    await supabase.from("profiles").update({ avatar_url: null }).eq("id", uid);
+    qc.invalidateQueries({ queryKey: ["avatars"] });
+  }
+  return (
+    <section className="rounded-2xl border border-border bg-card p-6">
+      <h2 className="text-lg font-medium">Profile photo</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Shown on your job posts, messages and public profile.</p>
+      <div className="mt-4 flex items-center gap-4">
+        <UserAvatar url={av[uid]} name={name} className="h-20 w-20" />
+        <label className="cursor-pointer">
+          <input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); e.target.value = ""; }} />
+          <span className="inline-flex h-9 items-center rounded-md border border-input px-4 text-sm hover:bg-accent">{busy ? "Uploading…" : "Upload photo"}</span>
+        </label>
+        {av[uid] && <Button variant="ghost" size="sm" onClick={remove}>Remove</Button>}
+      </div>
+    </section>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: "Account & privacy | Jobloom" }, { name: "robots", content: "noindex" }] }),
@@ -42,6 +80,7 @@ function Account() {
     <>
       <PageTitle title="Account & privacy">Your data belongs to you.</PageTitle>
       <div className="grid max-w-2xl gap-6">
+        <PhotoSection uid={uid} name={user!.email ?? ""} />
         <section className="rounded-2xl border border-border bg-card p-6">
           <h2 className="text-lg font-medium">Download your data</h2>
           <p className="mt-1 text-sm text-muted-foreground">Get a copy of everything linked to your account as a file.</p>

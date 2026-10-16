@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { isValidMessage, nextBookingStatuses, type BookingStatus } from "@/lib/rules/marketplace";
 import { CompletionPanel } from "@/components/app/CompletionPanel";
 import { ReportButton } from "@/components/app/ReportButton";
+import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 
 export const Route = createFileRoute("/_authenticated/messages/$id")({
   head: () => ({ meta: [{ title: "Conversation | Jobloom" }, { name: "robots", content: "noindex" }] }),
@@ -44,6 +45,7 @@ function Thread() {
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => end.current?.scrollIntoView({ block: "end" }), [q.data?.msgs.length]);
   const refresh = () => qc.invalidateQueries({ queryKey: ["thread", id] });
+  const av = useAvatars([q.data?.conv?.customer_id, q.data?.conv?.worker_id]);
 
   if (q.isLoading) return <p className="text-muted-foreground">Loading…</p>;
   if (!q.data?.conv) return <p>Conversation not found.</p>;
@@ -79,14 +81,20 @@ function Thread() {
       <section className="flex min-h-[60vh] flex-col rounded-2xl border border-border bg-card">
         <header className="border-b border-border p-4">
           <Link to="/messages" className="mb-1 flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3" /> All messages</Link>
-          <h1 className="text-xl font-medium">{other || "Jobloom member"}</h1>
+          <div className="flex items-center gap-3">
+            <UserAvatar url={av[conv.customer_id === uid ? conv.worker_id : conv.customer_id]} name={other} className="h-10 w-10" />
+            <h1 className="text-xl font-medium">{other || "Jobloom member"}</h1>
+          </div>
           <p className="text-sm text-muted-foreground">{names?.job_title ?? "Direct enquiry"}</p>
         </header>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {msgs.map((m) => (
-            <div key={m.id} className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${m.sender_id === uid ? "ml-auto bg-primary text-primary-foreground" : "bg-muted"}`}>
-              <p className="whitespace-pre-line">{m.body}</p>
-              <p className="mt-1 text-[10px] opacity-70">{new Date(m.created_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</p>
+            <div key={m.id} className={`flex items-end gap-2 ${m.sender_id === uid ? "flex-row-reverse" : ""}`}>
+              <UserAvatar url={av[m.sender_id]} name={m.sender_id === uid ? "You" : other} className="h-7 w-7 shrink-0" />
+              <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${m.sender_id === uid ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                <p className="whitespace-pre-line">{m.body}</p>
+                <p className="mt-1 text-[10px] opacity-70">{new Date(m.created_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</p>
+              </div>
             </div>
           ))}
           <div ref={end} />
