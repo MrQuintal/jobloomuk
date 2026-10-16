@@ -7,4 +7,5 @@
 - [ ] Verification labels & price guidance — blocked: owner rules
 - [ ] Maps/travel radius map — blocked: map provider choice
 
-- [ ] Subscriptions: create Pro/Business products (£6/£10 monthly, annual), checkout, webhook, billing portal — waiting on subscription business-logic answers
+- [x] Subscriptions: products, checkout, webhook, billing page
+- [ ] Build the paid plan features (analytics, team profiles, alerts, etc.)
