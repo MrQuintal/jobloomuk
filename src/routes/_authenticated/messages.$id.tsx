@@ -52,16 +52,16 @@ function Thread() {
     e.preventDefault();
     if (!isValidMessage(body)) return;
     const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: uid, body: body.trim() });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setBody("");
     refresh();
   }
   async function requestVisit(e: React.FormEvent) {
     e.preventDefault();
     const d = new Date(when);
-    if (!when || d.getTime() < Date.now()) return toast.error("Pick a future date and time");
+    if (!when || d.getTime() < Date.now()) { toast.error("Pick a future date and time"); return; }
     const { error } = await supabase.from("booking_requests").insert({ conversation_id: id, requested_by: uid, starts_at: d.toISOString(), note: note.trim() || null });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setWhen(""); setNote("");
     toast.success("Visit requested");
     refresh();

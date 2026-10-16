@@ -85,7 +85,7 @@ function Respond({ jobId, uid, onDone }: { jobId: string; uid: string; onDone: (
       e.preventDefault();
       if (!isValidMessage(msg)) return;
       const { error } = await supabase.from("job_responses").insert({ job_id: jobId, worker_id: uid, message: msg.trim() });
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       toast.success("Sent to the customer");
       onDone();
     }}>

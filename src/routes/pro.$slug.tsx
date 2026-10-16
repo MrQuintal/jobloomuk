@@ -36,7 +36,7 @@ export const Route = createFileRoute("/pro/$slug")({
     };
   },
   notFoundComponent: () => (
-    <PageShell><div className="container-page py-24"><h1 className="text-3xl">Professional not found</h1><p className="mt-2 text-muted-foreground">This profile may not be published yet.</p><Link to="/professionals" search={{ category: undefined }} className="mt-4 inline-block underline">Browse professionals</Link></div></PageShell>
+    <PageShell><div className="container-page py-24"><h1 className="text-3xl">Professional not found</h1><p className="mt-2 text-muted-foreground">This profile may not be published yet.</p><Link to="/professionals" search={{}} className="mt-4 inline-block underline">Browse professionals</Link></div></PageShell>
   ),
   component: Pro,
 });
@@ -116,7 +116,7 @@ function ContactBox({ workerId, name }: { workerId: string; name: string }) {
         setBusy(true);
         const { data, error } = await supabase.rpc("start_conversation_with_worker", { _worker_id: workerId, _body: body.trim() });
         setBusy(false);
-        if (error) return toast.error(error.message);
+        if (error) { toast.error(error.message); return; }
         navigate({ to: "/messages/$id", params: { id: data } });
       }}
     >

@@ -6,12 +6,12 @@ import { listCategories, listPros } from "@/lib/public.functions";
 import { pageHead } from "@/lib/seo";
 
 const catsQ = queryOptions({ queryKey: ["categories"], queryFn: () => listCategories() });
-const prosQ = (category?: string) => queryOptions({ queryKey: ["pros", category ?? ""], queryFn: () => listPros({ data: { category } }) });
+const prosQ = (category?: string) => queryOptions({ queryKey: ["pros", category ?? ""], queryFn: () => listPros({ data: category ? { category } : {} }) });
 
 export const Route = createFileRoute("/professionals")({
-  validateSearch: (s: Record<string, unknown>): { category?: string } => (typeof s.category === "string" ? { category: s.category } : {}),
+  validateSearch: (s: Record<string, unknown>): { category?: string } => (typeof s["category"] === "string" ? { category: s["category"] } : {}),
   loaderDeps: ({ search }) => ({ category: search.category }),
-  loader: ({ context, deps }) => Promise.all([context.queryClient.ensureQueryData(catsQ), context.queryClient.ensureQueryData(prosQ(deps.category))]),
+  loader: ({ context, deps }) => Promise.all([context.queryClient.ensureQueryData(catsQ), context.queryClient.ensureQueryData(prosQ(deps["category"]))]),
   head: () => pageHead("/professionals", "Find professionals", "Browse independent UK professionals, see their real portfolio work and contact them directly."),
   component: Pros,
 });
@@ -25,7 +25,7 @@ function Pros() {
       <PageIntro eyebrow="Find professionals" title="Local people, real work.">Browse profiles and portfolios, then message the professional directly.</PageIntro>
       <section className="container-page pb-20">
         <div className="mb-8 flex flex-wrap gap-2">
-          <Link to="/professionals" search={{ category: undefined }} className={`rounded-full border px-3 py-1.5 text-sm ${!category ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>All</Link>
+          <Link to="/professionals" search={{}} className={`rounded-full border px-3 py-1.5 text-sm ${!category ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>All</Link>
           {cats.map((c) => (
             <Link key={c.id} to="/professionals" search={{ category: c.slug }} className={`rounded-full border px-3 py-1.5 text-sm ${category === c.slug ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{c.name}</Link>
           ))}

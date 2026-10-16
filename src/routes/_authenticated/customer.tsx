@@ -48,7 +48,7 @@ function CustomerPage() {
   }
   async function accept(responseId: string) {
     const { data, error } = await supabase.rpc("accept_job_response", { _response_id: responseId });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     navigate({ to: "/messages/$id", params: { id: data } });
   }
   async function decline(responseId: string) {
@@ -63,7 +63,7 @@ function CustomerPage() {
       <div className="grid max-w-4xl gap-6">
         <PostJob uid={uid} onDone={refresh} />
         {jobs.isLoading ? <p className="text-muted-foreground">Loading…</p> : jobs.data?.jobs.length === 0 ? (
-          <p className="text-muted-foreground">You haven't posted any jobs yet. You can also <Link to="/professionals" search={{ category: undefined }} className="underline">browse professionals</Link> and message one directly.</p>
+          <p className="text-muted-foreground">You haven't posted any jobs yet. You can also <Link to="/professionals" search={{}} className="underline">browse professionals</Link> and message one directly.</p>
         ) : jobs.data?.jobs.map((j) => {
           const rs = jobs.data.responses.filter((r) => r.job_id === j.id && r.status !== "withdrawn");
           return (
@@ -121,14 +121,14 @@ function PostJob({ uid, onDone }: { uid: string; onDone: () => void }) {
       className="rounded-2xl border border-border bg-card p-6"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (f.title.trim().length < 5 || f.description.trim().length < 20 || f.area.trim().length < 2) return toast.error("Add a title, a description of at least 20 characters and your area");
+        if (f.title.trim().length < 5 || f.description.trim().length < 20 || f.area.trim().length < 2) { toast.error("Add a title, a description of at least 20 characters and your area"); return; }
         setBusy(true);
         const { error } = await supabase.from("jobs").insert({
           customer_id: uid, title: f.title.trim(), description: f.description.trim(), area: f.area.trim(),
           category_id: f.category_id || null, timing: f.timing.trim() || null, budget_note: f.budget_note.trim() || null,
         });
         setBusy(false);
-        if (error) return toast.error(error.message);
+        if (error) { toast.error(error.message); return; }
         toast.success("Job posted");
         setF(empty);
         setOpen(false);

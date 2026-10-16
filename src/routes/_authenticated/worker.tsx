@@ -74,7 +74,7 @@ function ProfileForm({ uid, profile }: { uid: string; profile: Profile | null })
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (f.business_name.trim().length < 2) return toast.error("Add your business name");
+    if (f.business_name.trim().length < 2) { toast.error("Add your business name"); return; }
     setBusy(true);
     const row = {
       user_id: uid,
@@ -89,7 +89,7 @@ function ProfileForm({ uid, profile }: { uid: string; profile: Profile | null })
     };
     const { error } = await supabase.from("worker_profiles").upsert(row);
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Profile saved");
     qc.invalidateQueries({ queryKey: ["my-worker-profile"] });
   }
@@ -142,9 +142,9 @@ function Availability({ uid }: { uid: string }) {
   const slots = useQuery({ queryKey: ["my-slots", uid], queryFn: async () => (await supabase.from("availability_slots").select("*").eq("worker_id", uid).order("weekday")).data ?? [] });
   const [d, setD] = useState({ weekday: 1, start: "09:00", end: "17:00" });
   async function add() {
-    if (!isValidSlot(d.weekday, d.start, d.end)) return toast.error("End time must be after start time");
+    if (!isValidSlot(d.weekday, d.start, d.end)) { toast.error("End time must be after start time"); return; }
     const { error } = await supabase.from("availability_slots").insert({ worker_id: uid, weekday: d.weekday, start_time: d.start, end_time: d.end });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["my-slots"] });
   }
   async function remove(id: string) {
@@ -193,15 +193,15 @@ function Portfolio({ uid }: { uid: string }) {
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (f.title.trim().length < 3) return toast.error("Give the project a title");
+    if (f.title.trim().length < 3) { toast.error("Give the project a title"); return; }
     const bad = files.find((x) => !x.type.startsWith("image/") || x.size > 8 * 1024 * 1024);
-    if (bad) return toast.error("Photos must be images under 8 MB");
+    if (bad) { toast.error("Photos must be images under 8 MB"); return; }
     setBusy(true);
     const { data: proj, error } = await supabase.from("portfolio_projects").insert({
       worker_id: uid, title: f.title.trim(), description: f.description.trim() || null,
       location_text: f.location_text.trim() || null, completed_on: f.completed_on || null,
     }).select("id").single();
-    if (error) { setBusy(false); return toast.error(error.message); }
+    if (error) { setBusy(false); { toast.error(error.message); return; } }
     const paths: string[] = [];
     for (const file of files.slice(0, 8)) {
       const path = `${uid}/${proj.id}/${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
