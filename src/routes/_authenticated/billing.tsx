@@ -10,7 +10,7 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
-import { createCheckoutSession, createPortalSession } from "@/lib/payments.functions";
+import { changePlan, createCheckoutSession, createPortalSession } from "@/lib/payments.functions";
 import { currentTier, formatPence, PLAN_FEATURES, PRICE_IDS, PRICES_PENCE, type Interval } from "@/lib/rules/plans";
 
 export const Route = createFileRoute("/_authenticated/billing")({
@@ -40,7 +40,6 @@ function Billing() {
   const tier = currentTier(sub.data);
   const [switching, setSwitching] = useState<string | null>(null);
   const [polling, setPolling] = useState(false);
-  const qc = useQueryClient();
 
   async function manage() {
     const r = await createPortalSession({ data: { environment: getStripeEnvironment(), returnUrl: window.location.href } });
@@ -58,9 +57,7 @@ function Billing() {
     setPolling(true);
     for (let i = 0; i < 10; i++) {
       await new Promise((res) => setTimeout(res, 2000));
-      const fresh = await qc.fetchQuery({ queryKey: ["subscription", user!.id], queryFn: sub.refetch }).catch(() => null);
-      void fresh;
-      const latest = qc.getQueryData<{ price_id?: string } | null>(["subscription", user!.id]);
+      const { data: latest } = await sub.refetch();
       if (latest?.price_id === target) break;
     }
     await sub.refetch();
