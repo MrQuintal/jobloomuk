@@ -10,23 +10,41 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ForCustomersRouteImport } from './routes/for-customers'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/customer'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedWorkerRouteImport } from './routes/_authenticated/worker'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -59,91 +77,179 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCustomerRoute = AuthenticatedCustomerRouteImport.update({
+  id: '/customer',
+  path: '/customer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWorkerRoute = AuthenticatedWorkerRouteImport.update({
+  id: '/worker',
+  path: '/worker',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/for-customers': typeof ForCustomersRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/customer': typeof AuthenticatedCustomerRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/worker': typeof AuthenticatedWorkerRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/for-customers': typeof ForCustomersRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/customer': typeof AuthenticatedCustomerRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/worker': typeof AuthenticatedWorkerRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/for-customers': typeof ForCustomersRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/customer': typeof AuthenticatedCustomerRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/worker': typeof AuthenticatedWorkerRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
+    | '/auth'
     | '/contact'
     | '/for-customers'
     | '/for-professionals'
     | '/how-it-works'
     | '/pricing'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
+    | '/customer'
+    | '/dashboard'
+    | '/onboarding'
+    | '/worker'
+    | '/admin/audit'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/auth'
     | '/contact'
     | '/for-customers'
     | '/for-professionals'
     | '/how-it-works'
     | '/pricing'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
+    | '/customer'
+    | '/dashboard'
+    | '/onboarding'
+    | '/worker'
+    | '/admin/audit'
+    | '/admin/users'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
+    | '/auth'
     | '/contact'
     | '/for-customers'
     | '/for-professionals'
     | '/how-it-works'
     | '/pricing'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
+    | '/_authenticated/customer'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/onboarding'
+    | '/_authenticated/worker'
+    | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   ForCustomersRoute: typeof ForCustomersRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   HowItWorksRoute: typeof HowItWorksRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
 }
 
@@ -156,11 +262,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -205,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -212,18 +339,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/customer': {
+      id: '/_authenticated/customer'
+      path: '/customer'
+      fullPath: '/customer'
+      preLoaderRoute: typeof AuthenticatedCustomerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/worker': {
+      id: '/_authenticated/worker'
+      path: '/worker'
+      fullPath: '/worker'
+      preLoaderRoute: typeof AuthenticatedWorkerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCustomerRoute: typeof AuthenticatedCustomerRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedWorkerRoute: typeof AuthenticatedWorkerRoute
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCustomerRoute: AuthenticatedCustomerRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedWorkerRoute: AuthenticatedWorkerRoute,
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
+  AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   ForCustomersRoute: ForCustomersRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   HowItWorksRoute: HowItWorksRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
