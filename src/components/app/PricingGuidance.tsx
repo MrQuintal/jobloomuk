@@ -18,7 +18,7 @@ function usePricingTips() {
   });
 }
 
-export function PricingGuidance({ slug, name }: { slug?: string; name?: string }) {
+export function PricingGuidance({ slug, name }: { slug?: string | undefined; name?: string | undefined }) {
   const q = usePricingTips();
   const tips = pricingTipsForCategory(q.data, slug);
   if (!tips.length) return null;
