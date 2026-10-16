@@ -1043,6 +1043,10 @@ export type Database = {
         Args: { _response_id: string }
         Returns: undefined
       }
+      express_interest: {
+        Args: { _body: string; _job_id: string }
+        Returns: string
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
