@@ -9,7 +9,10 @@ import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/reset-password")({
   staticData: { sitemap: false },
-  head: () => pageHead("/reset-password", "Choose a new password", "Set a new password for your Jobloom account."),
+  head: () => {
+    const head = pageHead("/reset-password", "Choose a new password", "Set a new password for your Jobloom account.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: Reset,
 });
 
