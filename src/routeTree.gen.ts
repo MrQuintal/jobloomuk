@@ -17,6 +17,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ForCustomersRouteImport } from './routes/for-customers'
 import { Route as ForProfessionalsRouteImport } from './routes/for-professionals'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfessionalsRouteImport } from './routes/professionals'
@@ -27,7 +28,6 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/customer'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
@@ -81,6 +81,11 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
   path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JobsRoute = JobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -129,11 +134,6 @@ const AuthenticatedCustomerRoute = AuthenticatedCustomerRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
-  id: '/jobs',
-  path: '/jobs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -216,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/for-customers': typeof ForCustomersRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/jobs': typeof JobsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/professionals': typeof ProfessionalsRoute
@@ -226,7 +227,6 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AuthenticatedBillingRoute
   '/customer': typeof AuthenticatedCustomerRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/jobs': typeof AuthenticatedJobsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/tools': typeof AuthenticatedToolsRoute
@@ -249,6 +249,7 @@ export interface FileRoutesByTo {
   '/for-customers': typeof ForCustomersRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/jobs': typeof JobsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/professionals': typeof ProfessionalsRoute
@@ -259,7 +260,6 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/customer': typeof AuthenticatedCustomerRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/jobs': typeof AuthenticatedJobsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/tools': typeof AuthenticatedToolsRoute
@@ -284,6 +284,7 @@ export interface FileRoutesById {
   '/for-customers': typeof ForCustomersRoute
   '/for-professionals': typeof ForProfessionalsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/jobs': typeof JobsRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/professionals': typeof ProfessionalsRoute
@@ -294,7 +295,6 @@ export interface FileRoutesById {
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/customer': typeof AuthenticatedCustomerRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
@@ -319,6 +319,7 @@ export interface FileRouteTypes {
     | '/for-customers'
     | '/for-professionals'
     | '/how-it-works'
+    | '/jobs'
     | '/pricing'
     | '/privacy'
     | '/professionals'
@@ -329,7 +330,6 @@ export interface FileRouteTypes {
     | '/billing'
     | '/customer'
     | '/dashboard'
-    | '/jobs'
     | '/notifications'
     | '/onboarding'
     | '/tools'
@@ -352,6 +352,7 @@ export interface FileRouteTypes {
     | '/for-customers'
     | '/for-professionals'
     | '/how-it-works'
+    | '/jobs'
     | '/pricing'
     | '/privacy'
     | '/professionals'
@@ -362,7 +363,6 @@ export interface FileRouteTypes {
     | '/billing'
     | '/customer'
     | '/dashboard'
-    | '/jobs'
     | '/notifications'
     | '/onboarding'
     | '/tools'
@@ -386,6 +386,7 @@ export interface FileRouteTypes {
     | '/for-customers'
     | '/for-professionals'
     | '/how-it-works'
+    | '/jobs'
     | '/pricing'
     | '/privacy'
     | '/professionals'
@@ -396,7 +397,6 @@ export interface FileRouteTypes {
     | '/_authenticated/billing'
     | '/_authenticated/customer'
     | '/_authenticated/dashboard'
-    | '/_authenticated/jobs'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/tools'
@@ -421,6 +421,7 @@ export interface RootRouteChildren {
   ForCustomersRoute: typeof ForCustomersRoute
   ForProfessionalsRoute: typeof ForProfessionalsRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  JobsRoute: typeof JobsRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfessionalsRoute: typeof ProfessionalsRoute
@@ -488,6 +489,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jobs': {
+      id: '/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof JobsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -558,13 +566,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/jobs': {
-      id: '/_authenticated/jobs'
-      path: '/jobs'
-      fullPath: '/jobs'
-      preLoaderRoute: typeof AuthenticatedJobsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notifications': {
@@ -666,7 +667,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCustomerRoute: typeof AuthenticatedCustomerRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
@@ -684,7 +684,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCustomerRoute: AuthenticatedCustomerRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
@@ -709,6 +708,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForCustomersRoute: ForCustomersRoute,
   ForProfessionalsRoute: ForProfessionalsRoute,
   HowItWorksRoute: HowItWorksRoute,
+  JobsRoute: JobsRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfessionalsRoute: ProfessionalsRoute,
