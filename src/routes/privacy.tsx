@@ -14,7 +14,7 @@ export const Route = createFileRoute("/privacy")({
 });
 
 const OPERATOR = "Dino Quintal";
-const ADDRESS = "33 Albrook Close";
+const ADDRESS = "33 Albrook Close, Windlesham, Surrey, GU19 5BW";
 const EMAIL = "MrQuintal@hotmail.co.uk";
 
 const NOTICE = `
