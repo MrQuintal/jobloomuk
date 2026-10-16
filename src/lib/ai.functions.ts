@@ -17,20 +17,37 @@ export const aiWrite = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: tier } = await context.supabase.rpc("plan_tier", { _u: context.userId });
     if (tier === "free") return { error: "AI writing help is part of Pro and Business." };
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
       method: "POST",
-      headers: { Authorization: `Bearer ${process.env["LOVABLE_API_KEY"]}`, "Content-Type": "application/json" },
+      headers: { "Lovable-API-Key": process.env["LOVABLE_API_KEY"]!, "X-Lovable-AIG-SDK": "fetch", "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: `${KINDS[data.kind]} Use British English. Return only the text.` },
-          { role: "user", content: data.text },
-        ],
+        model: "openai/gpt-6-astra",
+        stream: true,
+        store: false,
+        reasoning: { effort: "low" },
+        instructions: `${KINDS[data.kind]} Use British English. Return only the text.`,
+        input: [{ role: "user", content: data.text }],
       }),
     });
     if (res.status === 429) return { error: "Too many requests — try again in a minute." };
     if (res.status === 402) return { error: "AI writing is temporarily unavailable." };
-    if (!res.ok) return { error: "AI writing failed. Please try again." };
-    const j = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    return { text: j.choices?.[0]?.message?.content?.trim() ?? "" };
+    if (!res.ok || !res.body) return { error: "AI writing failed. Please try again." };
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "", text = "";
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n");
+      buf = lines.pop() ?? "";
+      for (const l of lines) {
+        if (!l.startsWith("data:")) continue;
+        try {
+          const ev = JSON.parse(l.slice(5).trim()) as { type?: string; delta?: string };
+          if (ev.type === "response.output_text.delta" && ev.delta) text += ev.delta;
+        } catch { /* ignore keep-alives */ }
+      }
+    }
+    return { text: text.trim() };
   });
