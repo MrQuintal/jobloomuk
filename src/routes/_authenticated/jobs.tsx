@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -19,7 +20,10 @@ function PosterAvatar({ id }: { id: string }) {
 }
 
 export const Route = createFileRoute("/_authenticated/jobs")({
-  head: () => ({ meta: [{ title: "Find jobs | Jobloom" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/jobs", "Find jobs", "Browse open UK customer jobs and manage your professional responses on Jobloom.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: () => (
     <RoleGate allow={["worker"]}>
       <JobsPage />

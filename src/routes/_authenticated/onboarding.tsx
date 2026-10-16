@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,7 +9,10 @@ import { PageTitle } from "@/components/app/AppShell";
 import type { AppRole } from "@/lib/rules/roles";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  head: () => ({ meta: [{ title: "Choose your account type | Jobloom" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/onboarding", "Choose your account type", "Choose a Jobloom customer or professional account to get started.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: Onboarding,
 });
 

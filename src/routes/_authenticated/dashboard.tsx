@@ -1,9 +1,13 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { homeForRoles } from "@/lib/rules/roles";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard | Jobloom" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/dashboard", "Your account", "Open the appropriate Jobloom account area for your assigned roles.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: Dashboard,
 });
 

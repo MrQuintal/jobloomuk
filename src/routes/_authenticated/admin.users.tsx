@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,7 +9,10 @@ import { useAuth } from "@/lib/auth";
 import { ALL_ROLES, canManageRole, ROLE_LABELS, type AppRole } from "@/lib/rules/roles";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
-  head: () => ({ meta: [{ title: "Users | Jobloom admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/admin/users", "Admin users", "Manage Jobloom account roles and account status with audited owner controls.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: () => (
     <RoleGate allow={["admin", "super_admin"]}>
       <UsersAdmin />

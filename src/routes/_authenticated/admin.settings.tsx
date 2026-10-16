@@ -9,9 +9,14 @@ import { PageTitle } from "@/components/app/AppShell";
 import { RoleGate } from "@/components/app/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/lib/rules/marketplace";
+import { PricingTipsEditor } from "@/components/app/PricingGuidance";
+import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
-  head: () => ({ meta: [{ title: "Settings | Jobloom admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/admin/settings", "Admin settings", "Manage Jobloom categories, pricing tips, feature switches and account overview.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: () => <RoleGate allow={["admin", "super_admin"]}><Settings /></RoleGate>,
 });
 
@@ -65,6 +70,7 @@ function Settings() {
               <Button type="submit" variant="outline" disabled={!name.trim()}>Add</Button>
             </form>
           </section>
+          <PricingTipsEditor categories={q.data.cats} />
           <section>
             <h2 className="text-xl font-medium">Feature switches</h2>
             {q.data.flags.length === 0 && <p className="mt-2 text-muted-foreground">No switches defined.</p>}

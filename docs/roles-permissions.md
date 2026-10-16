@@ -19,4 +19,4 @@ Rules enforced in the database:
 - Only admins can change `account_status`.
 
 ## Creating the first super admin
-Run once (via Lovable Cloud SQL): `insert into user_roles(user_id, role) values ('<your user id>', 'super_admin');`
+The verified requesting owner's account was bootstrapped once through privileged Lovable Cloud tooling on 16 October 2026, only while no super admin existed. The existing professional role was retained. Future elevated changes must use the protected `admin_set_role` function, not self-service metadata or direct browser writes.

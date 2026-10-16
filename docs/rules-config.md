@@ -7,3 +7,6 @@
 | Review eligibility | Only after both parties confirm the job happened via a Jobloom introduction | Credible reviews |
 | Ranking | Relevance + distance + evidence quality + response rate; subscription tier never affects review scores | Fairness |
 | Price guidance minimum sample | 10 completed jobs per category/area | Avoid misleading figures |
+
+## Category-specific pricing tips
+`platform_settings.category_pricing_tips` holds arrays of qualitative tips keyed by category slug, with `general` as the fallback. Admins can edit the tips under Overview & settings. Signed-in customers can read only this setting through a narrowly scoped policy; other settings remain admin-only. Tips do not contain invented monetary ranges or claim to be historical evidence.

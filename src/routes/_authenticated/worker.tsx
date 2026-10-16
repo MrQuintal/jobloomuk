@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -16,7 +17,10 @@ import { useAuth } from "@/lib/auth";
 import { WEEKDAYS, isValidSlot, slugify } from "@/lib/rules/marketplace";
 
 export const Route = createFileRoute("/_authenticated/worker")({
-  head: () => ({ meta: [{ title: "My business | Jobloom" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/worker", "My business", "Manage your Jobloom professional profile, availability, services and portfolio.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: () => (
     <RoleGate allow={["worker"]}>
       <WorkerPage />

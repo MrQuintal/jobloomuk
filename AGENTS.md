@@ -17,3 +17,4 @@
 - Signed-in pages live under `src/routes/_authenticated/`; `RoleGate` is UI-only, RLS is the real guard.
 - Shared marketing layout is `PageShell`/`ContentPage` in `src/components/site/`; app layout is `AppShell` — keeps pages consistent.
 - Payments: subscription state comes only from the signed payments webhook into public.subscriptions; plan tier is derived in src/lib/rules/plans.ts — client never decides access.
+- Pricing guidance reads the category-keyed tips from platform_settings through a shared parser and editor; no inferred historical amounts — keeps customer guidance owner-editable and avoids fabricated estimates.
