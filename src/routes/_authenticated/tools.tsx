@@ -59,10 +59,16 @@ function Tools() {
       <PageTitle title="Pro tools">You're on the <span className="capitalize">{tier}</span> plan. Paying never buys reviews, badges or guaranteed jobs.</PageTitle>
       <div className="grid max-w-4xl gap-6">
         <Section title="Profile analytics (last 30 days)" need="pro" tier={tier}><Analytics uid={uid} /></Section>
+        <Section title="Banner & sponsored placement" need="pro" tier={tier}><Branding uid={uid} /></Section>
+        <Section title="Instant job alerts" need="pro" tier={tier}>
+          <p className="text-sm text-muted-foreground">Save a search on <Link to="/jobs" className="underline">Find jobs</Link> and you'll get a notification the moment a matching job is posted. Email alerts are coming once Jobloom's email address is set up.</p>
+        </Section>
         <Section title="AI writing help" need="pro" tier={tier}><AiHelper /></Section>
         <Section title="Quote templates" need="pro" tier={tier}><Templates uid={uid} /></Section>
         <Section title="Lead pipeline" need="business" tier={tier}><Pipeline uid={uid} /></Section>
         <Section title="Team members" need="business" tier={tier}><Team uid={uid} /></Section>
+        <Section title="Branches" need="business" tier={tier}><Branches uid={uid} /></Section>
+        <Section title="Team calendar" need="business" tier={tier}><Calendar uid={uid} /></Section>
       </div>
     </>
   );
