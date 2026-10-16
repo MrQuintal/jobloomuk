@@ -5,6 +5,7 @@
 |---|---|
 | profiles | One per user: display name, avatar, postcode, phone, account_status |
 | user_roles | user_id + app_role (customer, worker, moderator, admin, super_admin) |
+| business_access_grants | Complimentary Business entitlement per professional; owner/super-admin reads, audited super-admin function writes; no billing changes |
 | audit_logs | Immutable record of sensitive actions (written by triggers/functions only) |
 | categories | Service categories (admin-managed) |
 | subscription_plans | Plan names, features, price (admin-managed) |

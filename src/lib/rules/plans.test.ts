@@ -1,11 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { currentTier, hasAccess, PRICES_PENCE, tierForPriceId } from "./plans";
+import { currentTier, effectiveTier, hasAccess, PRICES_PENCE, tierForPriceId } from "./plans";
 
 const now = new Date("2026-10-16T12:00:00Z");
 const future = "2026-11-16T12:00:00Z";
 const past = "2026-10-01T12:00:00Z";
 
 describe("plans", () => {
+  it("a Business grant upgrades a professional without changing their subscription", () => {
+    const sub = { status: "active", price_id: "pro_monthly", current_period_end: future };
+    expect(effectiveTier(sub, true, now)).toBe("business");
+    expect(currentTier(sub, now)).toBe("pro");
+    expect(sub.price_id).toBe("pro_monthly");
+    expect(effectiveTier(null, true, now)).toBe("business");
+  });
+  it("removing a grant restores the underlying paid or free plan", () => {
+    expect(effectiveTier({ status: "active", price_id: "pro_monthly", current_period_end: future }, false, now)).toBe("pro");
+    expect(effectiveTier(null, false, now)).toBe("free");
+    expect(effectiveTier({ status: "active", price_id: "business_monthly", current_period_end: future }, false, now)).toBe("business");
+  });
   it("Pro is £6/month and Business £10/month", () => {
     expect(PRICES_PENCE.pro.month).toBe(600);
     expect(PRICES_PENCE.business.month).toBe(1000);

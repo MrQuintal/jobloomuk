@@ -14,6 +14,11 @@ export function isAdmin(roles: AppRole[]): boolean {
   return roles.includes("admin") || roles.includes("super_admin");
 }
 
+/** Mirrors the super-admin-only admin_set_business_access database function. */
+export function canManageBusinessAccess(roles: AppRole[]): boolean {
+  return roles.includes("super_admin");
+}
+
 /** Which dashboard a signed-in user lands on. */
 export function homeForRoles(roles: AppRole[]): "/admin/users" | "/worker" | "/customer" | "/onboarding" {
   if (isAdmin(roles)) return "/admin/users";

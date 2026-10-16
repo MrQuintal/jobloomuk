@@ -7,6 +7,7 @@
 | ACC-003 | Roles in protected table; no self-escalation | Must | 1 | Done |
 | ADM-001 | Admin user list with role management | Must | 1 | Done |
 | ADM-002 | Immutable audit log | Must | 1 | Done |
+| ADM-004 | Super-admin-only audited complimentary Business upgrades in Users; billing unchanged | Must | 7 | Done |
 | CFG-001 | Categories, plans, flags, settings in database | Must | 1 | Done |
 | STO-001 | Secure storage buckets | Must | 1 | Done |
 | PRO-001 | Worker profile builder & public page | Must | 2 | Planned |

@@ -33,7 +33,12 @@ export function hasAccess(sub: SubRow | null | undefined, now = new Date()): boo
 }
 
 export function currentTier(sub: SubRow | null | undefined, now = new Date()): PlanTier {
-  return hasAccess(sub, now) ? tierForPriceId(sub!.price_id) : "free";
+  return sub && hasAccess(sub, now) ? tierForPriceId(sub.price_id) : "free";
+}
+
+/** Complimentary access changes features, never the paid subscription. */
+export function effectiveTier(sub: SubRow | null | undefined, businessGrant: boolean, now = new Date()): PlanTier {
+  return businessGrant ? "business" : currentTier(sub, now);
 }
 
 export function tierAtLeast(tier: PlanTier, needed: PlanTier) {
