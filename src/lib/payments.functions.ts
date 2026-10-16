@@ -7,18 +7,19 @@ const ALLOWED = new Set(["pro_monthly", "pro_yearly", "business_monthly", "busin
 
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
-  options: { email?: string; userId?: string },
+  options: { email?: string | undefined; userId?: string | undefined },
 ): Promise<string> {
   if (options.userId && !/^[a-zA-Z0-9_-]+$/.test(options.userId)) throw new Error("Invalid userId");
   if (options.userId) {
     const found = await stripe.customers.search({ query: `metadata['userId']:'${options.userId}'`, limit: 1 });
-    if (found.data.length) return found.data[0].id;
+    const first = found.data[0];
+    if (first) return first.id;
   }
   if (options.email) {
     const existing = await stripe.customers.list({ email: options.email, limit: 1 });
-    if (existing.data.length) {
-      const customer = existing.data[0];
-      if (options.userId && customer.metadata?.userId !== options.userId) {
+    const customer = existing.data[0];
+    if (customer) {
+      if (options.userId && customer.metadata?.["userId"] !== options.userId) {
         await stripe.customers.update(customer.id, { metadata: { ...customer.metadata, userId: options.userId } });
       }
       return customer.id;
