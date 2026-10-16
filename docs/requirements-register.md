@@ -17,16 +17,22 @@
 | JOB-002 | Workers discover and respond to jobs | Must | 3 | Planned |
 | MSG-001 | Direct messaging after introduction | Must | 4 | Planned |
 | BKG-001 | Availability & booking requests | Should | 4 | Planned |
-| REP-001 | Reviews only after confirmed completion | Must | 5 | Planned |
-| REP-002 | Newcomer fairness in ranking | Must | 5 | Planned |
+| REP-001 | Reviews only after confirmed completion | Must | 5 | Done |
+| REP-002 | Newcomer fairness in ranking | Must | 5 | Done |
 | REP-003 | Verification labels | Should | 5 | Planned |
 | PRC-001 | Price guidance from historical work | Could | 5 | Planned |
-| ADM-003 | Full admin modules (A–P in spec §17) | Must | 6 | Planned |
+| ADM-003 | Full admin modules (A–P in spec §17) | Must | 6 | Partial |
 | SUB-001 | Worker subscriptions billing | Must | 7 | Planned |
 | BIZ-001 | No job payments or commission, ever | Must | All | Enforced |
-| PRV-001 | Data export & account deletion | Must | 8 | Planned |
+| PRV-001 | Data export & account deletion | Must | 8 | Done |
+| MOD-001 | Reports on profiles, reviews and people | Must | 5 | Done |
+| NOT-001 | In-app notifications | Must | 4 | Done |
+| BKG-002 | Mutual completion confirmation | Must | 4 | Done |
 
 ## Build status (Oct 2026)
 - Phase 2 built: worker profile editor, specialisms, availability, portfolio with photos; public directory `/professionals` and profile `/pro/:slug`.
 - Phase 3 built: customers post/pause/close jobs and accept or decline responses; workers browse open jobs (`/jobs`), respond and withdraw.
 - Phase 4 built: conversations and messages (`/messages`), visit requests with accept/decline/cancel rules mirrored in `src/lib/rules/marketplace.ts`.
+- Phase 5 built: two-sided completion confirmation, 4-part reviews with public reply, average hidden below 3 reviews, newcomer interleaving in the directory, reports.
+- Phase 6 partial: admin overview, categories, feature switches, moderation queue, suspend/reactivate, deletion requests.
+- Blocked: SUB-001 billing (needs payment provider choice), email delivery (needs email domain), PRC-001 price guidance and REP-003 verification labels (need owner decisions), maps/geocoding (needs provider).
