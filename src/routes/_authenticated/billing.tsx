@@ -14,7 +14,7 @@ import { createCheckoutSession, createPortalSession } from "@/lib/payments.funct
 import { currentTier, formatPence, PLAN_FEATURES, PRICE_IDS, PRICES_PENCE, type Interval } from "@/lib/rules/plans";
 
 export const Route = createFileRoute("/_authenticated/billing")({
-  validateSearch: (s: Record<string, unknown>): { session_id?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { session_id?: string | undefined } => ({
     session_id: typeof s["session_id"] === "string" ? (s["session_id"] as string) : undefined,
   }),
   head: () => ({ meta: [{ title: "Plan & billing | Jobloom" }, { name: "robots", content: "noindex" }] }),
