@@ -124,6 +124,8 @@ function JobsPage() {
       <div className="grid max-w-4xl gap-4">
         {q.isLoading ? <p className="text-muted-foreground">Loading…</p> : q.data?.jobs.length === 0 ? (
           <p className="text-muted-foreground">No open jobs right now. Make sure your <Link to="/worker" className="underline">profile</Link> is published so customers can find you too.</p>
+        ) : shown.length === 0 ? (
+          <p className="text-muted-foreground">No jobs match that category or distance — try another category or a wider radius.</p>
         ) : shown.map((j) => {
           const resp = q.data!.mine.find((r) => r.job_id === j.id);
           return (
