@@ -5,8 +5,8 @@
 - [x] Paid plans (Stripe) with analytics, AI help, templates, pipeline, team
 - [x] Profile banners, portfolio videos, service-area map, profile PDF, branches, team calendar, sponsored placement, in-app instant job alerts
 - [x] Email infrastructure — managed sender configured for notify.jobloom.co.uk; send helper and job-match template prepared
-- [ ] Email job alerts — blocked: notify.jobloom.co.uk DNS verification pending; per-recipient event delivery wiring and live-send verification remain
-- [ ] Live payments — blocked: owner must finish setup in the Payments tab
+- [x] Email job alerts — Pro+ workers emailed on matching new jobs (in-app alerts unchanged)
+- [x] Live payments — Stripe go-live complete
 - [x] Custom domain — jobloom.co.uk and www.jobloom.co.uk connected and verified
 - [ ] Publish launch — blocked: owner has not explicitly authorised publication
 - [x] Owner super-admin access — verified requesting account promoted; existing professional role retained
