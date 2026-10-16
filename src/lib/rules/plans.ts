@@ -87,3 +87,18 @@ export const PLAN_FEATURES: Record<"pro" | "business", { tagline: string; featur
     ],
   },
 };
+
+/** Free professionals can show this many portfolio projects; Pro and Business are unlimited. Mirrors the DB trigger. */
+export const FREE_PORTFOLIO_LIMIT = 3;
+
+export function canAddPortfolioProject(tier: PlanTier, existing: number) {
+  return tier !== "free" || existing < FREE_PORTFOLIO_LIMIT;
+}
+
+/** Enquiries as a whole-number percentage of profile views. */
+export function conversionRate(views: number, enquiries: number) {
+  return views > 0 ? Math.round((enquiries / views) * 100) : 0;
+}
+
+export const LEAD_STAGES = ["new", "contacted", "quoted", "booked", "completed", "lost"] as const;
+export type LeadStage = (typeof LEAD_STAGES)[number];
