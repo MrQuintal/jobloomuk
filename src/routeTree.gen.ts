@@ -19,12 +19,14 @@ import { Route as ForProfessionalsRouteImport } from './routes/for-professionals
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProfessionalsRouteImport } from './routes/professionals'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedCustomerRouteImport } from './routes/_authenticated/customer'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedWorkerRouteImport } from './routes/_authenticated/worker'
+import { Route as ProSlugRouteImport } from './routes/pro.$slug'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 
@@ -77,6 +79,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfessionalsRoute = ProfessionalsRouteImport.update({
+  id: '/professionals',
+  path: '/professionals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -107,6 +114,11 @@ const AuthenticatedWorkerRoute = AuthenticatedWorkerRouteImport.update({
   path: '/worker',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ProSlugRoute = ProSlugRouteImport.update({
+  id: '/pro/$slug',
+  path: '/pro/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/admin/audit',
   path: '/admin/audit',
@@ -128,12 +140,14 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/professionals': typeof ProfessionalsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/customer': typeof AuthenticatedCustomerRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/worker': typeof AuthenticatedWorkerRoute
+  '/pro/$slug': typeof ProSlugRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
 }
@@ -147,12 +161,14 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/professionals': typeof ProfessionalsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/customer': typeof AuthenticatedCustomerRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/worker': typeof AuthenticatedWorkerRoute
+  '/pro/$slug': typeof ProSlugRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
 }
@@ -168,12 +184,14 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/professionals': typeof ProfessionalsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/customer': typeof AuthenticatedCustomerRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/worker': typeof AuthenticatedWorkerRoute
+  '/pro/$slug': typeof ProSlugRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
 }
@@ -189,12 +207,14 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/pricing'
     | '/privacy'
+    | '/professionals'
     | '/reset-password'
     | '/terms'
     | '/customer'
     | '/dashboard'
     | '/onboarding'
     | '/worker'
+    | '/pro/$slug'
     | '/admin/audit'
     | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
@@ -208,12 +228,14 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/pricing'
     | '/privacy'
+    | '/professionals'
     | '/reset-password'
     | '/terms'
     | '/customer'
     | '/dashboard'
     | '/onboarding'
     | '/worker'
+    | '/pro/$slug'
     | '/admin/audit'
     | '/admin/users'
   id:
@@ -228,12 +250,14 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/pricing'
     | '/privacy'
+    | '/professionals'
     | '/reset-password'
     | '/terms'
     | '/_authenticated/customer'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
     | '/_authenticated/worker'
+    | '/pro/$slug'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/users'
   fileRoutesById: FileRoutesById
@@ -249,8 +273,10 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfessionalsRoute: typeof ProfessionalsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  ProSlugRoute: typeof ProSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -325,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/professionals': {
+      id: '/professionals'
+      path: '/professionals'
+      fullPath: '/professionals'
+      preLoaderRoute: typeof ProfessionalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -366,6 +399,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/worker'
       preLoaderRoute: typeof AuthenticatedWorkerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/pro/$slug': {
+      id: '/pro/$slug'
+      path: '/pro/$slug'
+      fullPath: '/pro/$slug'
+      preLoaderRoute: typeof ProSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/audit': {
       id: '/_authenticated/admin/audit'
@@ -416,8 +456,10 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfessionalsRoute: ProfessionalsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  ProSlugRoute: ProSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
