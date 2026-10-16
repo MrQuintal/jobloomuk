@@ -51,7 +51,7 @@ function UsersAdmin() {
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full text-sm">
             <thead className="bg-muted text-left text-muted-foreground">
-              <tr><th className="p-3">Name</th><th className="p-3">Joined</th><th className="p-3">Roles</th></tr>
+              <tr><th className="p-3">Name</th><th className="p-3">Joined</th><th className="p-3">Roles</th><th className="p-3">Status</th></tr>
             </thead>
             <tbody>
               {data.map((u) => (
@@ -75,6 +75,18 @@ function UsersAdmin() {
                         );
                       })}
                     </div>
+                  </td>
+                  <td className="p-3">
+                    <button
+                      className="rounded-full border border-border px-2.5 py-0.5 text-xs hover:border-foreground"
+                      onClick={async () => {
+                        const next = u.account_status === "suspended" ? "active" : "suspended";
+                        const { error } = await supabase.rpc("admin_set_account_status", { _user: u.id, _status: next });
+                        if (error) toast.error(error.message); else qc.invalidateQueries({ queryKey: ["admin-users"] });
+                      }}
+                    >
+                      {u.account_status === "suspended" ? "Suspended · reactivate" : "Active · suspend"}
+                    </button>
                   </td>
                 </tr>
               ))}

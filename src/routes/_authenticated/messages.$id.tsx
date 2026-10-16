@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { isValidMessage, nextBookingStatuses, type BookingStatus } from "@/lib/rules/marketplace";
+import { CompletionPanel } from "@/components/app/CompletionPanel";
+import { ReportButton } from "@/components/app/ReportButton";
 
 export const Route = createFileRoute("/_authenticated/messages/$id")({
   head: () => ({ meta: [{ title: "Conversation | Jobloom" }, { name: "robots", content: "noindex" }] }),
@@ -120,7 +122,9 @@ function Thread() {
             <Button type="submit" size="sm" variant="outline" className="w-full">Send request</Button>
           </form>
         </div>
+        <CompletionPanel convId={id} uid={uid} customerId={conv.customer_id} workerId={conv.worker_id} />
         <p className="text-xs text-muted-foreground">Jobloom never takes payment. Agree the price directly and never pay anyone who asks you to pay through an unfamiliar link.</p>
+        <ReportButton type="user" id={conv.customer_id === uid ? conv.worker_id : conv.customer_id} label="Report this person" />
       </aside>
     </div>
   );

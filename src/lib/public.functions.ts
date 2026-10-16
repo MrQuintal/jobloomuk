@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { fairOrder, summarise } from "@/lib/rules/reputation";
 
 function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
@@ -27,12 +28,12 @@ export const listPros = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { data: rows, error } = await publicClient()
       .from("worker_profiles")
-      .select("user_id, slug, business_name, headline, base_area, travel_radius_miles, years_experience, worker_specialisms(is_primary, categories(slug, name))")
+      .select("user_id, slug, business_name, headline, base_area, travel_radius_miles, years_experience, created_at, worker_specialisms(is_primary, categories(slug, name))")
       .eq("is_published", true)
       .order("created_at", { ascending: true })
       .limit(100);
     if (error) throw new Error(error.message);
-    const list = rows ?? [];
+    const list = fairOrder(rows ?? []);
     return data.category ? list.filter((p) => p.worker_specialisms.some((s) => s.categories?.slug === data.category)) : list;
   });
 
@@ -47,9 +48,10 @@ export const getPro = createServerFn({ method: "GET" })
       .eq("is_published", true)
       .maybeSingle();
     if (!pro) return null;
-    const [{ data: projects }, { data: slots }] = await Promise.all([
+    const [{ data: projects }, { data: slots }, { data: reviews }] = await Promise.all([
       sb.from("portfolio_projects").select("id, title, description, location_text, completed_on, image_paths").eq("worker_id", pro.user_id).order("completed_on", { ascending: false }),
       sb.from("availability_slots").select("weekday, start_time, end_time").eq("worker_id", pro.user_id).order("weekday"),
+      sb.rpc("worker_reviews", { _worker: pro.user_id }),
     ]);
     const paths = (projects ?? []).flatMap((p) => p.image_paths);
     const urls: Record<string, string> = {};
@@ -61,5 +63,7 @@ export const getPro = createServerFn({ method: "GET" })
       pro,
       projects: (projects ?? []).map((p) => ({ ...p, images: p.image_paths.map((x) => urls[x]).filter(Boolean) })),
       slots: slots ?? [],
+      reviews: reviews ?? [],
+      summary: summarise(reviews ?? []),
     };
   });

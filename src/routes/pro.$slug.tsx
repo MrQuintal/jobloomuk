@@ -10,6 +10,7 @@ import { getPro } from "@/lib/public.functions";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { WEEKDAYS, isValidMessage } from "@/lib/rules/marketplace";
+import { ReportButton } from "@/components/app/ReportButton";
 
 const proQ = (slug: string) => queryOptions({ queryKey: ["pro", slug], queryFn: () => getPro({ data: { slug } }) });
 
@@ -45,7 +46,7 @@ function Pro() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(proQ(slug));
   if (!data) return null;
-  const { pro, projects, slots } = data;
+  const { pro, projects, slots, reviews, summary } = data;
   return (
     <PageShell>
       <section className="container-page grid gap-10 py-14 md:grid-cols-[1fr_22rem]">
@@ -76,6 +77,25 @@ function Pro() {
               ))}
             </div>
           )}
+
+          <h2 className="mt-14 text-2xl font-medium">Reviews</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Only customers whose job both sides confirmed as finished can leave a review.
+            {summary.average != null ? ` Average ${summary.average} out of 5 from ${summary.count} reviews.` : summary.count > 0 ? ` ${summary.count} review${summary.count === 1 ? "" : "s"} so far — an average shows after 3.` : ""}
+          </p>
+          {reviews.length === 0 ? <p className="mt-3 text-muted-foreground">No reviews yet. Everyone starts somewhere — judge the portfolio.</p> : (
+            <ul className="mt-6 space-y-4">
+              {reviews.map((r) => (
+                <li key={r.id} className="rounded-2xl border border-border bg-card p-5">
+                  <p className="text-sm font-medium">{r.reviewer} · {new Date(r.created_at).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Quality {r.quality} · Reliability {r.reliability} · Communication {r.communication} · Value {r.value}</p>
+                  <p className="mt-2 text-sm whitespace-pre-line">{r.body}</p>
+                  {r.worker_reply && <p className="mt-3 border-l-2 border-border pl-3 text-sm text-muted-foreground"><span className="font-medium">Reply:</span> {r.worker_reply}</p>}
+                  <div className="mt-2"><ReportButton type="review" id={r.id} /></div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <aside className="space-y-6">
           <ContactBox workerId={pro.user_id} name={pro.business_name} />
@@ -86,6 +106,7 @@ function Pro() {
             )}
           </div>
           <p className="text-xs text-muted-foreground">Jobloom doesn't handle payments. You agree the price and pay the professional directly.</p>
+          <ReportButton type="profile" id={pro.user_id} label="Report this profile" />
         </aside>
       </section>
     </PageShell>
