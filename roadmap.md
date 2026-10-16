@@ -4,7 +4,8 @@
 - [x] Phases 0–5 core, reviews, reports, notifications, privacy, admin
 - [x] Paid plans (Stripe) with analytics, AI help, templates, pipeline, team
 - [x] Profile banners, portfolio videos, service-area map, profile PDF, branches, team calendar, sponsored placement, in-app instant job alerts
-- [ ] Email job alerts — blocked: needs a sending email address on jobloom.co.uk
+- [x] Email infrastructure — managed sender configured for notify.jobloom.co.uk; send helper and job-match template prepared
+- [ ] Email job alerts — blocked: notify.jobloom.co.uk DNS verification pending; per-recipient event delivery wiring and live-send verification remain
 - [ ] Live payments — blocked: owner must finish setup in the Payments tab
 - [x] Custom domain — jobloom.co.uk and www.jobloom.co.uk connected and verified
 - [ ] Publish launch — blocked: owner has not explicitly authorised publication
