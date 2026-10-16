@@ -176,7 +176,7 @@ function Availability({ uid }: { uid: string }) {
 function Portfolio({ uid }: { uid: string }) {
   const qc = useQueryClient();
   const projects = useQuery({ queryKey: ["my-projects", uid], queryFn: async () => (await supabase.from("portfolio_projects").select("*").eq("worker_id", uid).order("created_at", { ascending: false })).data ?? [] });
-  const [f, setF] = useState({ title: "", description: "", location_text: "", completed_on: "" });
+  const [f, setF] = useState({ title: "", description: "", location_text: "", completed_on: "", video_url: "" });
   const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
@@ -194,12 +194,14 @@ function Portfolio({ uid }: { uid: string }) {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (f.title.trim().length < 3) { toast.error("Give the project a title"); return; }
+    if (f.video_url.trim() && !isValidVideoUrl(f.video_url)) { toast.error("Use a YouTube or Vimeo link"); return; }
     const bad = files.find((x) => !x.type.startsWith("image/") || x.size > 8 * 1024 * 1024);
     if (bad) { toast.error("Photos must be images under 8 MB"); return; }
     setBusy(true);
     const { data: proj, error } = await supabase.from("portfolio_projects").insert({
       worker_id: uid, title: f.title.trim(), description: f.description.trim() || null,
       location_text: f.location_text.trim() || null, completed_on: f.completed_on || null,
+      video_url: f.video_url.trim() || null,
     }).select("id").single();
     if (error) { setBusy(false); { toast.error(error.message); return; } }
     const paths: string[] = [];
@@ -210,7 +212,7 @@ function Portfolio({ uid }: { uid: string }) {
     }
     if (paths.length) await supabase.from("portfolio_projects").update({ image_paths: paths }).eq("id", proj.id);
     setBusy(false);
-    setF({ title: "", description: "", location_text: "", completed_on: "" });
+    setF({ title: "", description: "", location_text: "", completed_on: "", video_url: "" });
     setFiles([]);
     toast.success("Project added");
     qc.invalidateQueries({ queryKey: ["my-projects"] });
@@ -240,6 +242,7 @@ function Portfolio({ uid }: { uid: string }) {
         <div><Label>Where</Label><Input value={f.location_text} onChange={(e) => setF({ ...f, location_text: e.target.value })} maxLength={80} /></div>
         <div><Label>Finished</Label><Input type="date" value={f.completed_on} onChange={(e) => setF({ ...f, completed_on: e.target.value })} /></div>
         <div className="md:col-span-2"><Label>Photos (up to 8)</Label><Input type="file" accept="image/*" multiple onChange={(e) => setFiles(Array.from(e.target.files ?? []))} /></div>
+        <div className="md:col-span-2"><Label>Video link (Pro) — YouTube or Vimeo</Label><Input value={f.video_url} onChange={(e) => setF({ ...f, video_url: e.target.value })} placeholder="https://www.youtube.com/watch?v=…" /></div>
         <Button type="submit" variant="forest" disabled={busy} className="w-fit">{busy ? "Uploading…" : "Add project"}</Button>
       </form>
     </section>
