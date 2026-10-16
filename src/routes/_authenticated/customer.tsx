@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import type { JobStatus } from "@/lib/rules/marketplace";
 import { pageHead } from "@/lib/seo";
 import { PricingGuidance } from "@/components/app/PricingGuidance";
+import { sendJobAlertEmails } from "@/lib/alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/customer")({
   head: () => {
@@ -130,13 +131,14 @@ function PostJob({ uid, onDone }: { uid: string; onDone: () => void }) {
         e.preventDefault();
         if (f.title.trim().length < 5 || f.description.trim().length < 20 || f.area.trim().length < 2) { toast.error("Add a title, a description of at least 20 characters and your area"); return; }
         setBusy(true);
-        const { error } = await supabase.from("jobs").insert({
+        const { data: created, error } = await supabase.from("jobs").insert({
           customer_id: uid, title: f.title.trim(), description: f.description.trim(), area: f.area.trim(),
           category_id: f.category_id || null, timing: f.timing.trim() || null, budget_note: f.budget_note.trim() || null,
-        });
+        }).select("id").single();
         setBusy(false);
         if (error) { toast.error(error.message); return; }
         toast.success("Job posted");
+        sendJobAlertEmails({ data: { jobId: created.id } }).catch(() => {});
         setF(empty);
         setOpen(false);
         onDone();
