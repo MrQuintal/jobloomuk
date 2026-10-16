@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PageTitle } from "@/components/app/AppShell";
-import { RoleGate } from "@/components/app/RoleGate";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -54,15 +53,13 @@ function JobsGate() {
       </>
     );
   }
-  return (
-    <RoleGate allow={["worker"]}>
-      <JobsPage uid={user.id} />
-    </RoleGate>
-  );
+  return <JobsPage uid={user.id} />;
 }
 
 function JobsPage({ uid }: { uid: string }) {
   const qc = useQueryClient();
+  const { roles } = useAuth();
+  const isWorker = roles.includes("worker");
   const q = useQuery({
     queryKey: ["open-jobs", uid],
     queryFn: async () => {
@@ -162,8 +159,10 @@ function JobsPage({ uid }: { uid: string }) {
               <p className="mt-3 whitespace-pre-line text-sm">{j.description}</p>
               {resp ? (
                 <ResponseState resp={resp} onChange={() => qc.invalidateQueries({ queryKey: ["open-jobs"] })} />
-              ) : canRespondToJob({ status: j.status as JobStatus, customer_id: j.customer_id }, uid) ? (
+              ) : isWorker && canRespondToJob({ status: j.status as JobStatus, customer_id: j.customer_id }, uid) ? (
                 <Respond jobId={j.id} uid={uid} onDone={() => qc.invalidateQueries({ queryKey: ["open-jobs"] })} />
+              ) : !isWorker ? (
+                <p className="mt-4 text-xs text-muted-foreground">Only professional accounts can respond to jobs.</p>
               ) : null}
             </article>
           );
