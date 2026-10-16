@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageTitle } from "@/components/app/AppShell";
@@ -5,7 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/messages/")({
-  head: () => ({ meta: [{ title: "Messages | Jobloom" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/messages", "Messages", "Read your private Jobloom conversations with customers and professionals.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: Inbox,
 });
 

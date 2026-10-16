@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
@@ -14,7 +15,10 @@ import { aiWrite } from "@/lib/ai.functions";
 import { conversionRate, LEAD_STAGES, tierAtLeast, type PlanTier } from "@/lib/rules/plans";
 
 export const Route = createFileRoute("/_authenticated/tools")({
-  head: () => ({ meta: [{ title: "Pro tools | Jobloom" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/tools", "Pro tools", "Manage your Jobloom professional analytics, saved searches and business tools.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: () => (
     <RoleGate allow={["worker"]}>
       <Tools />

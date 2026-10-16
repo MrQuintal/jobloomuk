@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,7 +6,10 @@ import { PageTitle } from "@/components/app/AppShell";
 import { RoleGate } from "@/components/app/RoleGate";
 
 export const Route = createFileRoute("/_authenticated/admin/audit")({
-  head: () => ({ meta: [{ title: "Audit log | Jobloom admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/admin/audit", "Admin audit log", "Review the permanent record of important Jobloom account and role changes.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: () => (
     <RoleGate allow={["admin", "super_admin"]}>
       <Audit />

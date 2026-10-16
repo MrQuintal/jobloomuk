@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -7,7 +8,10 @@ import { RoleGate } from "@/components/app/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/moderation")({
-  head: () => ({ meta: [{ title: "Moderation | Jobloom admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/admin/moderation", "Admin moderation", "Manage Jobloom reports, published reviews and privacy requests.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: () => <RoleGate allow={["admin", "super_admin", "moderator"]}><Moderation /></RoleGate>,
 });
 

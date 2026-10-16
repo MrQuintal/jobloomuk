@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -17,7 +18,10 @@ export const Route = createFileRoute("/_authenticated/billing")({
   validateSearch: (s: Record<string, unknown>): { session_id?: string | undefined } => ({
     session_id: typeof s["session_id"] === "string" ? (s["session_id"] as string) : undefined,
   }),
-  head: () => ({ meta: [{ title: "Plan & billing | Jobloom" }, { name: "robots", content: "noindex" }] }),
+  head: () => {
+    const head = pageHead("/billing", "Plan & billing", "Manage your Jobloom Pro or Business subscription, billing period and payment details.");
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   component: Billing,
 });
 
