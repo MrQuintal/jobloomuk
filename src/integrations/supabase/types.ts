@@ -192,6 +192,35 @@ export type Database = {
         }
         Relationships: []
       }
+      job_completions: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          customer_confirmed_at: string | null
+          worker_confirmed_at: string | null
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          customer_confirmed_at?: string | null
+          worker_confirmed_at?: string | null
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          customer_confirmed_at?: string | null
+          worker_confirmed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_completions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_responses: {
         Row: {
           created_at: string
@@ -309,6 +338,33 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           description: string | null
@@ -381,6 +437,36 @@ export type Database = {
           },
         ]
       }
+      privacy_requests: {
+        Row: {
+          created_at: string
+          handled_at: string | null
+          id: string
+          kind: string
+          reason: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          handled_at?: string | null
+          id?: string
+          kind: string
+          reason?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          handled_at?: string | null
+          id?: string
+          kind?: string
+          reason?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_status: string
@@ -413,6 +499,95 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reports: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          id: string
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          id?: string
+          reason: string
+          reporter_id: string
+          resolved_at?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          body: string
+          communication: number
+          conversation_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          quality: number
+          reliability: number
+          status: string
+          value: number
+          worker_id: string
+          worker_reply: string | null
+        }
+        Insert: {
+          body: string
+          communication: number
+          conversation_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          quality: number
+          reliability: number
+          status?: string
+          value: number
+          worker_id: string
+          worker_reply?: string | null
+        }
+        Update: {
+          body?: string
+          communication?: number
+          conversation_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          quality?: number
+          reliability?: number
+          status?: string
+          value?: number
+          worker_id?: string
+          worker_reply?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_plans: {
         Row: {
@@ -555,6 +730,10 @@ export type Database = {
     }
     Functions: {
       accept_job_response: { Args: { _response_id: string }; Returns: string }
+      admin_set_account_status: {
+        Args: { _status: string; _user: string }
+        Returns: undefined
+      }
       admin_set_role: {
         Args: {
           _grant: boolean
@@ -567,6 +746,7 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: undefined
       }
+      confirm_completion: { Args: { _conv: string }; Returns: undefined }
       conversation_party_names: {
         Args: { _conv: string }
         Returns: {
@@ -588,9 +768,27 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_conversation_party: { Args: { _conv: string }; Returns: boolean }
+      notify: {
+        Args: { _link: string; _title: string; _user: string }
+        Returns: undefined
+      }
       start_conversation_with_worker: {
         Args: { _body: string; _worker_id: string }
         Returns: string
+      }
+      worker_reviews: {
+        Args: { _worker: string }
+        Returns: {
+          body: string
+          communication: number
+          created_at: string
+          id: string
+          quality: number
+          reliability: number
+          reviewer: string
+          value: number
+          worker_reply: string
+        }[]
       }
     }
     Enums: {
