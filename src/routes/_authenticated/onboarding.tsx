@@ -21,7 +21,10 @@ function Onboarding() {
     setBusy(true);
     const { error } = await supabase.rpc("choose_initial_role", { _role: role });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await refreshRoles();
     navigate({ to: role === "worker" ? "/worker" : "/customer" });
   }

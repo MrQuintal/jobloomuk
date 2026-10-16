@@ -10,10 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/site/Logo";
 import { pageHead } from "@/lib/seo";
 
-type Search = { mode?: "signin" | "signup" | "reset"; role?: "customer" | "worker"; next?: string };
+type Search = { mode?: "signin" | "signup" | "reset" | undefined; role?: "customer" | "worker" | undefined; next?: string | undefined };
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>): Search => ({
+  validateSearch: (raw: Record<string, unknown>): Search => {
+    const s = raw as { mode?: unknown; role?: unknown; next?: unknown };
+    return {
     mode: s.mode === "signup" || s.mode === "reset" ? s.mode : "signin",
     role: s.role === "worker" ? "worker" : s.role === "customer" ? "customer" : undefined,
     next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : undefined,
