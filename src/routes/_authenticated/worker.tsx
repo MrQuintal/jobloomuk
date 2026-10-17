@@ -189,6 +189,10 @@ function Portfolio({ uid }: { uid: string }) {
   const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState({ title: "", description: "", location_text: "", completed_on: "", video_url: "" });
+  const [keepPaths, setKeepPaths] = useState<string[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
 
   useEffect(() => {
     const paths = (projects.data ?? []).flatMap((p) => p.image_paths);
@@ -200,25 +204,35 @@ function Portfolio({ uid }: { uid: string }) {
     });
   }, [projects.data]);
 
+  function photosOk(list: File[]) {
+    const bad = list.find((x) => !x.type.startsWith("image/") || x.size > 8 * 1024 * 1024);
+    if (bad) toast.error("Photos must be images under 8 MB");
+    return !bad;
+  }
+
+  async function uploadPhotos(projectId: string, list: File[]) {
+    const paths: string[] = [];
+    for (const file of list) {
+      const path = `${uid}/${projectId}/${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
+      const up = await supabase.storage.from("portfolio").upload(path, file, { contentType: file.type });
+      if (!up.error) paths.push(path);
+    }
+    return paths;
+  }
+
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (f.title.trim().length < 3) { toast.error("Give the project a title"); return; }
     if (f.video_url.trim() && !isValidVideoUrl(f.video_url)) { toast.error("Use a YouTube or Vimeo link"); return; }
-    const bad = files.find((x) => !x.type.startsWith("image/") || x.size > 8 * 1024 * 1024);
-    if (bad) { toast.error("Photos must be images under 8 MB"); return; }
+    if (!photosOk(files)) return;
     setBusy(true);
     const { data: proj, error } = await supabase.from("portfolio_projects").insert({
       worker_id: uid, title: f.title.trim(), description: f.description.trim() || null,
       location_text: f.location_text.trim() || null, completed_on: f.completed_on || null,
       video_url: f.video_url.trim() || null,
     }).select("id").single();
-    if (error) { setBusy(false); { toast.error(error.message); return; } }
-    const paths: string[] = [];
-    for (const file of files.slice(0, 8)) {
-      const path = `${uid}/${proj.id}/${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
-      const up = await supabase.storage.from("portfolio").upload(path, file, { contentType: file.type });
-      if (!up.error) paths.push(path);
-    }
+    if (error) { setBusy(false); toast.error(error.message); return; }
+    const paths = await uploadPhotos(proj.id, files.slice(0, 8));
     if (paths.length) await supabase.from("portfolio_projects").update({ image_paths: paths }).eq("id", proj.id);
     setBusy(false);
     setF({ title: "", description: "", location_text: "", completed_on: "", video_url: "" });
@@ -227,9 +241,56 @@ function Portfolio({ uid }: { uid: string }) {
     qc.invalidateQueries({ queryKey: ["my-projects"] });
   }
 
+  function startEdit(p: NonNullable<typeof projects.data>[number]) {
+    setEditingId(p.id);
+    setDraft({
+      title: p.title,
+      description: p.description ?? "",
+      location_text: p.location_text ?? "",
+      completed_on: p.completed_on?.slice(0, 10) ?? "",
+      video_url: p.video_url ?? "",
+    });
+    setKeepPaths(p.image_paths);
+    setNewFiles([]);
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    const current = (projects.data ?? []).find((p) => p.id === editingId);
+    if (!current) return;
+    if (draft.title.trim().length < 3) { toast.error("Give the project a title"); return; }
+    if (draft.video_url.trim() && !isValidVideoUrl(draft.video_url)) { toast.error("Use a YouTube or Vimeo link"); return; }
+    if (!photosOk(newFiles)) return;
+    if (keepPaths.length + newFiles.length > 8) { toast.error("A project can have up to 8 photos"); return; }
+    setBusy(true);
+    const added = await uploadPhotos(current.id, newFiles);
+    const image_paths = [...keepPaths, ...added];
+    const saved = await supabase.from("portfolio_projects").update({
+      title: draft.title.trim(),
+      description: draft.description.trim() || null,
+      location_text: draft.location_text.trim() || null,
+      completed_on: draft.completed_on || null,
+      video_url: draft.video_url.trim() || null,
+      image_paths,
+    }).eq("id", current.id).eq("worker_id", uid);
+    const dropped = current.image_paths.filter((path) => !keepPaths.includes(path));
+    if (saved.error) {
+      if (added.length) await supabase.storage.from("portfolio").remove(added);
+      setBusy(false);
+      toast.error(saved.error.message);
+      return;
+    }
+    if (dropped.length) await supabase.storage.from("portfolio").remove(dropped);
+    setBusy(false);
+    setEditingId(null);
+    toast.success("Project updated");
+    qc.invalidateQueries({ queryKey: ["my-projects"] });
+  }
+
   async function remove(p: { id: string; image_paths: string[] }) {
     if (p.image_paths.length) await supabase.storage.from("portfolio").remove(p.image_paths);
     await supabase.from("portfolio_projects").delete().eq("id", p.id);
+    if (editingId === p.id) setEditingId(null);
     qc.invalidateQueries({ queryKey: ["my-projects"] });
   }
 
@@ -238,10 +299,41 @@ function Portfolio({ uid }: { uid: string }) {
       <h2 className="text-xl font-medium">Portfolio</h2>
       <div className="mt-4 grid gap-3">
         {(projects.data ?? []).map((p) => (
-          <div key={p.id} className="flex gap-4 rounded-xl border border-border p-3">
-            {p.image_paths[0] && thumbs[p.image_paths[0]] && <img src={thumbs[p.image_paths[0]]} alt="" className="size-20 rounded-lg object-cover" />}
-            <div className="flex-1"><p className="font-medium">{p.title}</p><p className="text-sm text-muted-foreground">{p.image_paths.length} photo(s){p.location_text ? ` · ${p.location_text}` : ""}</p></div>
-            <button aria-label="Delete project" onClick={() => remove(p)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-4" /></button>
+          <div key={p.id} className="rounded-xl border border-border p-3">
+            {editingId === p.id ? (
+              <form onSubmit={saveEdit} className="grid gap-3 md:grid-cols-2">
+                <div className="md:col-span-2"><Label>Project title</Label><Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} maxLength={120} /></div>
+                <div className="md:col-span-2"><Label>What you did</Label><Textarea rows={3} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} maxLength={2000} /></div>
+                <div><Label>Where</Label><Input value={draft.location_text} onChange={(e) => setDraft({ ...draft, location_text: e.target.value })} maxLength={80} /></div>
+                <div><Label>Finished</Label><Input type="date" value={draft.completed_on} onChange={(e) => setDraft({ ...draft, completed_on: e.target.value })} /></div>
+                <div className="md:col-span-2">
+                  <Label>Photos ({keepPaths.length + newFiles.length} of 8)</Label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {keepPaths.map((path) => (
+                      <div key={path} className="relative">
+                        {thumbs[path] && <img src={thumbs[path]} alt="" className="size-20 rounded-lg object-cover" />}
+                        <button type="button" className="mt-1 block text-xs text-muted-foreground underline" onClick={() => setKeepPaths(keepPaths.filter((item) => item !== path))}>Remove photo</button>
+                      </div>
+                    ))}
+                  </div>
+                  <Input className="mt-2" type="file" accept="image/*" multiple onChange={(e) => setNewFiles(Array.from(e.target.files ?? []))} />
+                </div>
+                <div className="md:col-span-2"><Label>Video link (Pro) — YouTube or Vimeo</Label><Input value={draft.video_url} onChange={(e) => setDraft({ ...draft, video_url: e.target.value })} placeholder="https://www.youtube.com/watch?v=…" /></div>
+                <div className="flex gap-2">
+                  <Button type="submit" variant="forest" size="sm" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
+                  <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => setEditingId(null)}>Cancel</Button>
+                </div>
+              </form>
+            ) : (
+              <div className="flex gap-4">
+                {p.image_paths[0] && thumbs[p.image_paths[0]] && <img src={thumbs[p.image_paths[0]]} alt="" className="size-20 rounded-lg object-cover" />}
+                <div className="flex-1"><p className="font-medium">{p.title}</p><p className="text-sm text-muted-foreground">{p.image_paths.length} photo(s){p.location_text ? ` · ${p.location_text}` : ""}</p></div>
+                <div className="flex items-start gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => startEdit(p)}>Edit</Button>
+                  <button aria-label="Delete project" onClick={() => remove(p)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-4" /></button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
