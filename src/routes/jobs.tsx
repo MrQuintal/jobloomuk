@@ -1,7 +1,7 @@
 import { pageHead } from "@/lib/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PageTitle } from "@/components/app/AppShell";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,10 @@ function PosterAvatar({ id }: { id: string }) {
 export const Route = createFileRoute("/jobs")({
   ssr: false,
   staticData: { sitemap: true },
+  validateSearch: (s: Record<string, unknown>): { job?: string } => {
+    const job = s["job"];
+    return typeof job === "string" && /^[0-9a-f-]{36}$/i.test(job) ? { job } : {};
+  },
   head: () => pageHead("/jobs", "Find jobs", "Browse open UK customer jobs by trade and distance on Jobloom."),
   component: () => (
     <PageShell>
@@ -39,6 +43,7 @@ export const Route = createFileRoute("/jobs")({
 
 function JobsGate() {
   const { user, ready } = useAuth();
+  const { job: focusId } = Route.useSearch();
   if (!ready) return <p className="text-muted-foreground">Loading…</p>;
   if (!user) {
     return (
@@ -47,7 +52,7 @@ function JobsGate() {
         <div className="max-w-xl rounded-2xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">To protect customers' privacy, job details are only shown to signed-in professionals.</p>
           <div className="mt-4 flex gap-2">
-            <Button asChild variant="forest"><Link to="/auth" search={{ mode: "signin", next: "/jobs" }}>Log in</Link></Button>
+            <Button asChild variant="forest"><Link to="/auth" search={{ mode: "signin", next: focusId ? `/jobs?job=${focusId}` : "/jobs" }}>Log in</Link></Button>
             <Button asChild variant="bloom"><Link to="/auth" search={{ mode: "signup" }}>Join as a professional</Link></Button>
           </div>
         </div>
@@ -59,6 +64,7 @@ function JobsGate() {
 
 function JobsPage({ uid }: { uid: string }) {
   const qc = useQueryClient();
+  const { job: focusId } = Route.useSearch();
   const { roles } = useAuth();
   const isWorker = roles.includes("worker");
   const q = useQuery({
@@ -98,6 +104,12 @@ function JobsPage({ uid }: { uid: string }) {
   const shown = (q.data?.jobs ?? [])
     .filter((j) => (!cat || j.category_id === cat) && matches(j, flt) && withinRadius(milesTo(j.area), radius))
     .sort((a, b) => (me.data ? (milesTo(a.area) ?? 1e9) - (milesTo(b.area) ?? 1e9) : 0));
+  const focus = focusId ? (q.data?.jobs ?? []).find((j) => j.id === focusId) : undefined;
+  const ordered = focus && !shown.some((j) => j.id === focus.id) ? [focus, ...shown] : shown;
+  useEffect(() => {
+    if (!focusId) return;
+    document.getElementById(`job-${focusId}`)?.scrollIntoView({ block: "center" });
+  }, [focusId, q.data]);
 
   return (
     <>
@@ -145,12 +157,12 @@ function JobsPage({ uid }: { uid: string }) {
       <div className="grid max-w-4xl gap-4">
         {q.isLoading ? <p className="text-muted-foreground">Loading…</p> : q.data?.jobs.length === 0 ? (
           <p className="text-muted-foreground">No open jobs right now. Make sure your <Link to="/worker" className="underline">profile</Link> is published so customers can find you too.</p>
-        ) : shown.length === 0 ? (
+        ) : ordered.length === 0 ? (
           <p className="text-muted-foreground">No jobs match that category or distance — try another category or a wider radius.</p>
-        ) : shown.map((j) => {
+        ) : ordered.map((j) => {
           const resp = q.data!.mine.find((r) => r.job_id === j.id);
           return (
-            <article key={j.id} className="rounded-2xl border border-border bg-card p-6">
+            <article id={`job-${j.id}`} key={j.id} className={`scroll-mt-24 rounded-2xl border bg-card p-6 ${j.id === focusId ? "border-bloom ring-2 ring-bloom" : "border-border"}`}>
               <div className="flex items-center gap-3">
                 <PosterAvatar id={j.customer_id} />
                 <h2 className="text-xl font-medium">{j.title} {pro && isAlert(j) && <span className="ml-2 rounded-full bg-bloom px-2 py-0.5 align-middle text-xs text-bloom-foreground">New match</span>}</h2>

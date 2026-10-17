@@ -6,9 +6,10 @@ interface Props {
   jobTitle?: string;
   area?: string;
   searchName?: string;
+  jobId?: string;
 }
 
-function JobMatch({ name, jobTitle = "A new customer job", area, searchName }: Props) {
+function JobMatch({ name, jobTitle = "A new customer job", area, searchName, jobId }: Props) {
   return (
     <Html lang="en-GB">
       <Head />
@@ -21,7 +22,7 @@ function JobMatch({ name, jobTitle = "A new customer job", area, searchName }: P
           <Text>{searchName ? `A customer has posted a job matching your saved search “${searchName}”.` : "A customer has posted a job matching your saved search."}</Text>
           <Heading as="h2" style={styles.title}>{jobTitle}</Heading>
           {area && <Text>Area: {area}</Text>}
-          <Button href="https://jobloom.co.uk/jobs" style={styles.button}>View matching jobs</Button>
+          <Button href={jobId ? `https://jobloom.co.uk/jobs?job=${jobId}` : "https://jobloom.co.uk/jobs"} style={styles.button}>View this job</Button>
           <Text style={styles.note}>The customer chooses who to contact. A match is not a guarantee of work. Agree scope, price and payment directly with the customer.</Text>
         </Container>
       </Body>

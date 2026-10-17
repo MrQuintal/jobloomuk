@@ -43,7 +43,7 @@ export const sendJobAlertEmails = createServerFn({ method: "POST" })
       try {
         const r = await sendTemplateEmail("job-match", email, {
           idempotencyKey: `job-match-${job.id}-${workerId}`,
-          templateData: { name: (p as { display_name?: string } | null)?.display_name?.split(" ")[0], jobTitle: job.title, area: job.area, searchName },
+          templateData: { name: (p as { display_name?: string } | null)?.display_name?.split(" ")[0], jobTitle: job.title, area: job.area, searchName, jobId: job.id },
         });
         if (r.sent) sent++;
       } catch (e) {

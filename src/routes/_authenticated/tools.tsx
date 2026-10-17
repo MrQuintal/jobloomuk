@@ -69,7 +69,7 @@ function Tools() {
         <Section title="Profile analytics (last 30 days)" need="pro" tier={tier}><Analytics uid={uid} /></Section>
         <Section title="Banner & sponsored placement" need="pro" tier={tier}><Branding uid={uid} /></Section>
         <Section title="Instant job alerts" need="pro" tier={tier}>
-          <p className="text-sm text-muted-foreground">Save a search on <Link to="/jobs" className="underline">Find jobs</Link> and you'll get a notification the moment a matching job is posted. Email alerts are coming once Jobloom's email address is set up.</p>
+          <p className="text-sm text-muted-foreground">Save words on <Link to="/alerts" className="underline">Alerts</Link> and you'll get a notification the moment a matching job is posted. The notification opens that job.</p>
         </Section>
         <Section title="AI writing help" need="pro" tier={tier}><AiHelper /></Section>
         <Section title="Quote templates" need="pro" tier={tier}><Templates uid={uid} /></Section>

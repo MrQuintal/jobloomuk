@@ -134,6 +134,13 @@
       "when": 1792282800000,
       "tag": "0018_hide_conversation_from_inbox",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792286400000,
+      "tag": "0019_job_alert_opens_post",
+      "breakpoints": true
     }
   ]
 }

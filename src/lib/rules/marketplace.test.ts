@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRespondToJob, hiddenFromInbox, isValidMessage, isValidSlot, nextBookingStatuses, slugify } from "./marketplace";
+import { alertKeyword, canRespondToJob, hiddenFromInbox, isValidMessage, isValidSlot, nextBookingStatuses, slugify } from "./marketplace";
 
 describe("marketplace rules", () => {
   it("slugifies business names", () => {
@@ -14,6 +14,12 @@ describe("marketplace rules", () => {
     expect(nextBookingStatuses("requested", false)).toEqual(["accepted", "declined"]);
     expect(nextBookingStatuses("requested", true)).toEqual(["cancelled"]);
     expect(nextBookingStatuses("accepted", false)).toEqual([]);
+  });
+  it("keeps alert words between 2 and 40 characters", () => {
+    expect(alertKeyword("  Boiler ")).toBe("boiler");
+    expect(alertKeyword("kitchen  tap")).toBe("kitchen tap");
+    expect(alertKeyword("a")).toBeNull();
+    expect(alertKeyword("x".repeat(41))).toBeNull();
   });
   it("hides a conversation only for the person who removed it", () => {
     const c = { customer_id: "c", worker_id: "w", customer_hidden_at: "2026-10-17T12:00:00Z", worker_hidden_at: null };

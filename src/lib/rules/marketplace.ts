@@ -26,6 +26,13 @@ export function nextBookingStatuses(status: BookingStatus, isRequester: boolean)
   return isRequester ? ["cancelled"] : ["accepted", "declined"];
 }
 
+/** A saved alert word: 2 to 40 characters, compared without regard to capital letters. */
+export function alertKeyword(raw: string): string | null {
+  const word = raw.trim().toLowerCase().replace(/\s+/g, " ");
+  if (word.length < 2 || word.length > 40) return null;
+  return word;
+}
+
 /** True when this person has removed the conversation from their own inbox. */
 export function hiddenFromInbox(c: { customer_id: string; worker_id: string; customer_hidden_at: string | null; worker_hidden_at: string | null }, userId: string): boolean {
   if (c.customer_id === userId) return c.customer_hidden_at != null;
