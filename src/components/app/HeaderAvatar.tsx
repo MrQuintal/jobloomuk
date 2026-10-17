@@ -47,7 +47,7 @@ export function HeaderAvatar() {
       <button type="button" aria-label="Update profile photo" className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" disabled={busy} onClick={() => inputRef.current?.click()}>
         <UserAvatar url={av[user.id]} name={name} className="h-9 w-9" />
       </button>
-      <input ref={inputRef} type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) choose(file); e.target.value = ""; }} />
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) choose(file); e.target.value = ""; }} />
       <Dialog open={!!cropFile} onOpenChange={(open) => { if (!open && !busy) setCropFile(null); }}>
         <DialogContent>
           <DialogHeader>
