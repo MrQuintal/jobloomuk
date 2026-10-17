@@ -1,5 +1,5 @@
 # Roadmap
-- [ ] Super-admin-only audited job post removal in Find jobs and Moderation; confirm and verify permissions
+- [x] Super-admin-only audited job post removal in Find jobs and Moderation; cancellation and deletion checked with temporary posts, audit read back, role tests passed
 - [x] Remove REP-003 credential verification from product scope and add customer credential-check reminders
 - [x] PRC-001 — category-specific pricing tips and admin editor; historical monetary ranges deferred pending genuine data
 - [x] Phases 0–5 core, reviews, reports, notifications, privacy, admin
