@@ -36,9 +36,11 @@ export function currentTier(sub: SubRow | null | undefined, now = new Date()): P
   return sub && hasAccess(sub, now) ? tierForPriceId(sub.price_id) : "free";
 }
 
-/** Complimentary access changes features, never the paid subscription. */
-export function effectiveTier(sub: SubRow | null | undefined, businessGrant: boolean, now = new Date()): PlanTier {
-  return businessGrant ? "business" : currentTier(sub, now);
+/** Complimentary access changes features, never the paid subscription. The higher of paid and complimentary wins. Mirrors plan_tier(). */
+export function effectiveTier(sub: SubRow | null | undefined, grant: boolean | "pro" | "business" | null, now = new Date()): PlanTier {
+  const paid = currentTier(sub, now);
+  const comp: PlanTier = grant === true ? "business" : grant ? grant : "free";
+  return TIER_RANK[comp] > TIER_RANK[paid] ? comp : paid;
 }
 
 export function tierAtLeast(tier: PlanTier, needed: PlanTier) {

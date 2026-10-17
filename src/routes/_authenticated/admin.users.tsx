@@ -2,7 +2,7 @@ import { pageHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Building2, Loader2, Undo2 } from "lucide-react";
+import { Building2, Loader2, Sparkles, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +33,7 @@ function UsersAdmin() {
     queryKey: ["admin-business-grants"],
     enabled: canUpgrade,
     queryFn: async () => {
-      const { data, error } = await supabase.from("business_access_grants").select("user_id");
+      const { data, error } = await supabase.from("business_access_grants").select("user_id, tier");
       if (error) throw error;
       return data ?? [];
     },
@@ -60,15 +60,16 @@ function UsersAdmin() {
     qc.invalidateQueries({ queryKey: ["admin-users"] });
   }
 
-  async function changeBusinessAccess(userId: string, name: string, grant: boolean) {
+  async function changePlan(userId: string, name: string, tier: "pro" | "business" | null) {
     if (!canUpgrade || pendingUser) return;
-    const prompt = grant
-      ? `Grant complimentary Business access to ${name}? All Business tools unlock immediately. Existing subscription charges are unchanged.`
-      : `Remove complimentary Business access for ${name}? Their access returns to their paid plan, or Free. Existing subscription charges are unchanged.`;
+    const label = tier === "pro" ? "Pro" : "Business";
+    const prompt = tier
+      ? `Give ${name} a complimentary ${label} plan for free? ${label} tools unlock immediately. Existing subscription charges are unchanged.`
+      : `Remove the complimentary plan for ${name}? Their access returns to their paid plan, or Free. Existing subscription charges are unchanged.`;
     if (!window.confirm(prompt)) return;
     setPendingUser(userId);
     try {
-      const { error } = await supabase.rpc("admin_set_business_access", { _user_id: userId, _grant: grant });
+      const { error } = await supabase.rpc("admin_set_complimentary_tier", { _user_id: userId, _tier: tier as string });
       if (error) throw error;
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["admin-business-grants"] }),
@@ -76,9 +77,9 @@ function UsersAdmin() {
         qc.invalidateQueries({ queryKey: ["tier"] }),
         qc.invalidateQueries({ queryKey: ["admin-audit"] }),
       ]);
-      toast.success(grant ? "Business access granted" : "Complimentary Business access removed");
+      toast.success(tier ? `Complimentary ${label} granted` : "Complimentary plan removed");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Couldn't change Business access. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Couldn't change the plan. Please try again.");
     } finally {
       setPendingUser(null);
     }
@@ -95,7 +96,7 @@ function UsersAdmin() {
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full text-sm">
             <thead className="bg-muted text-left text-muted-foreground">
-              <tr><th className="p-3">Name</th><th className="p-3">Joined</th><th className="p-3">Roles</th><th className="p-3">Status</th>{canUpgrade && <th className="p-3">Business access</th>}</tr>
+              <tr><th className="p-3">Name</th><th className="p-3">Joined</th><th className="p-3">Roles</th><th className="p-3">Status</th>{canUpgrade && <th className="p-3">Complimentary plan</th>}</tr>
             </thead>
             <tbody>
               {data.map((u) => (
@@ -132,20 +133,26 @@ function UsersAdmin() {
                       {u.account_status === "suspended" ? "Suspended · reactivate" : "Active · suspend"}
                     </button>
                   </td>
-                  {canUpgrade && (
-                    <td className="p-3">
-                      {u.roles.includes("worker") || grants.data?.some((g) => g.user_id === u.id) ? (
-                        <div className="flex flex-col items-start gap-1.5">
-                          <span className="text-xs text-muted-foreground">{grants.data?.some((g) => g.user_id === u.id) ? "Complimentary Business" : "No complimentary upgrade"}</span>
-                          <Button size="sm" variant="outline" disabled={pendingUser !== null || grants.isPending || !!grants.error}
-                            onClick={() => changeBusinessAccess(u.id, u.display_name ?? "this professional", !grants.data?.some((g) => g.user_id === u.id))}>
-                            {pendingUser === u.id ? <Loader2 className="animate-spin" /> : grants.data?.some((g) => g.user_id === u.id) ? <Undo2 /> : <Building2 />}
-                            {grants.data?.some((g) => g.user_id === u.id) ? "Remove upgrade" : "Upgrade to Business"}
-                          </Button>
-                        </div>
-                      ) : <span className="text-muted-foreground">—</span>}
-                    </td>
-                  )}
+                  {canUpgrade && (() => {
+                    const comp = grants.data?.find((g) => g.user_id === u.id)?.tier as "pro" | "business" | undefined;
+                    const busy = pendingUser !== null || grants.isPending || !!grants.error;
+                    const name = u.display_name ?? "this professional";
+                    return (
+                      <td className="p-3">
+                        {u.roles.includes("worker") || comp ? (
+                          <div className="flex flex-col items-start gap-1.5">
+                            <span className="text-xs text-muted-foreground">{comp ? `Complimentary ${comp === "pro" ? "Pro" : "Business"} (free)` : "No complimentary upgrade"}</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {pendingUser === u.id && <Loader2 className="size-4 animate-spin" />}
+                              {comp !== "pro" && <Button size="sm" variant="outline" disabled={busy} onClick={() => changePlan(u.id, name, "pro")}><Sparkles />Upgrade to Pro</Button>}
+                              {comp !== "business" && <Button size="sm" variant="outline" disabled={busy} onClick={() => changePlan(u.id, name, "business")}><Building2 />Upgrade to Business</Button>}
+                              {comp && <Button size="sm" variant="ghost" disabled={busy} onClick={() => changePlan(u.id, name, null)}><Undo2 />Remove upgrade</Button>}
+                            </div>
+                          </div>
+                        ) : <span className="text-muted-foreground">—</span>}
+                      </td>
+                    );
+                  })()}
                 </tr>
               ))}
             </tbody>
