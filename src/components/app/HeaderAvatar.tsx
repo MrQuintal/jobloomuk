@@ -6,6 +6,7 @@ import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { profilePhotoSourceProblem } from "@/lib/profile-photo";
 
 export function HeaderAvatar() {
   const { user } = useAuth();
@@ -23,8 +24,8 @@ export function HeaderAvatar() {
   const name = nameQ.data || user.email || "You";
 
   function choose(file: File) {
-    if (!file.type.startsWith("image/")) { toast.error("Please choose an image"); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5MB"); return; }
+    const problem = profilePhotoSourceProblem(file);
+    if (problem) { toast.error(problem); return; }
     setCropFile(file);
   }
 

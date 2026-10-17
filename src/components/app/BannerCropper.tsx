@@ -30,6 +30,7 @@ export function BannerCropper({
   const imageRef = useRef<HTMLImageElement | null>(null);
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const placed = useRef(false);
+  const listening = useRef(true);
   const [url, setUrl] = useState<string | null>(null);
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [frame, setFrame] = useState({ w: 0, h: 0 });
@@ -38,11 +39,15 @@ export function BannerCropper({
 
   useEffect(() => {
     const next = URL.createObjectURL(file);
+    listening.current = true;
     setUrl(next);
     setZoom(1);
     setNatural(null);
     placed.current = false;
-    return () => URL.revokeObjectURL(next);
+    return () => {
+      listening.current = false;
+      URL.revokeObjectURL(next);
+    };
   }, [file]);
 
   useEffect(() => {
@@ -142,6 +147,11 @@ export function BannerCropper({
             onLoad={(e) => {
               imageRef.current = e.currentTarget;
               setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight });
+            }}
+            onError={() => {
+              if (!listening.current) return;
+              toast.error("This photo can't be opened here. Save it as a JPEG and try again.");
+              onCancel();
             }}
             className="absolute max-w-none select-none"
             style={shown ? { width: shown.width, height: shown.height, left: offset.x, top: offset.y } : { visibility: "hidden" }}

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 import { BannerCropper } from "@/components/app/BannerCropper";
+import { profilePhotoSourceProblem } from "@/lib/profile-photo";
 
 function PhotoSection({ uid, name }: { uid: string; name: string }) {
   const qc = useQueryClient();
@@ -17,8 +18,8 @@ function PhotoSection({ uid, name }: { uid: string; name: string }) {
   const [busy, setBusy] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
   function choose(file: File) {
-    if (!file.type.startsWith("image/")) { toast.error("Please choose an image"); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5MB"); return; }
+    const problem = profilePhotoSourceProblem(file);
+    if (problem) { toast.error(problem); return; }
     setCropFile(file);
   }
   async function upload(blob: Blob) {
