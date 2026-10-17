@@ -32,10 +32,11 @@ export function canRespondToJob(job: { status: JobStatus; customer_id: string },
   return job.status === "open" && job.customer_id !== workerId;
 }
 
-/** Mirrors the guard_booking_update trigger. */
+/** Mirrors the guard_booking_update trigger. Either person can cancel a waiting or agreed visit. */
 export function nextBookingStatuses(status: BookingStatus, isRequester: boolean): BookingStatus[] {
+  if (status === "accepted") return ["cancelled"];
   if (status !== "requested") return [];
-  return isRequester ? ["cancelled"] : ["accepted", "declined"];
+  return isRequester ? ["cancelled"] : ["accepted", "declined", "cancelled"];
 }
 
 /** A saved alert word: 2 to 40 characters, compared without regard to capital letters. */

@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/messages/$id")({
   component: Thread,
 });
 
-const ACTION_LABEL: Record<BookingStatus, string> = { accepted: "Accept", declined: "Decline", cancelled: "Cancel request", requested: "" };
+const ACTION_LABEL: Record<BookingStatus, string> = { accepted: "Accept", declined: "Decline", cancelled: "Cancel", requested: "" };
 const STATUS_LABEL: Record<BookingStatus, string> = { requested: "Waiting for reply", accepted: "Accepted", declined: "Declined", cancelled: "Cancelled" };
 
 function Thread() {
@@ -116,6 +116,7 @@ function Thread() {
     refresh();
   }
   async function decide(bookingId: string, status: BookingStatus) {
+    if (status === "cancelled" && !window.confirm("Cancel this visit? Both of you will be notified.")) return;
     const { error } = await supabase.from("booking_requests").update({ status }).eq("id", bookingId);
     if (error) toast.error(error.message);
     refresh();

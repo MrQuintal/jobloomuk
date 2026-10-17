@@ -15,10 +15,13 @@ describe("marketplace rules", () => {
     expect(canRespondToJob({ status: "closed", customer_id: "c" }, "w")).toBe(false);
     expect(canRespondToJob({ status: "open", customer_id: "w" }, "w")).toBe(false);
   });
-  it("only the other party accepts or declines a booking; the requester can cancel", () => {
-    expect(nextBookingStatuses("requested", false)).toEqual(["accepted", "declined"]);
+  it("either person can cancel a waiting or agreed visit; only the other person accepts or declines", () => {
+    expect(nextBookingStatuses("requested", false)).toEqual(["accepted", "declined", "cancelled"]);
     expect(nextBookingStatuses("requested", true)).toEqual(["cancelled"]);
-    expect(nextBookingStatuses("accepted", false)).toEqual([]);
+    expect(nextBookingStatuses("accepted", false)).toEqual(["cancelled"]);
+    expect(nextBookingStatuses("accepted", true)).toEqual(["cancelled"]);
+    expect(nextBookingStatuses("declined", false)).toEqual([]);
+    expect(nextBookingStatuses("cancelled", true)).toEqual([]);
   });
   it("keeps alert words between 2 and 40 characters", () => {
     expect(alertKeyword("  Boiler ")).toBe("boiler");
