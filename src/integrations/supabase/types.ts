@@ -202,6 +202,7 @@ export type Database = {
       }
       conversations: {
         Row: {
+          archived_at: string | null
           created_at: string
           customer_id: string
           id: string
@@ -210,6 +211,7 @@ export type Database = {
           worker_id: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           customer_id: string
           id?: string
@@ -218,6 +220,7 @@ export type Database = {
           worker_id: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           customer_id?: string
           id?: string
@@ -1079,6 +1082,7 @@ export type Database = {
           id: string
         }[]
       }
+      start_new_job: { Args: { _conv: string }; Returns: string }
       start_conversation_with_worker: {
         Args: { _body: string; _worker_id: string }
         Returns: string

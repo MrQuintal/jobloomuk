@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canReview, fairOrder, summarise } from "./reputation";
+import { canReview, canStartNewJob, fairOrder, summarise } from "./reputation";
 
 const both = { customer_confirmed_at: "x", worker_confirmed_at: "y" };
 const r = (n: number) => ({ quality: n, reliability: n, communication: n, value: n });
@@ -9,6 +9,12 @@ describe("reputation rules", () => {
     expect(canReview(both, true, false)).toBe(true);
     expect(canReview({ customer_confirmed_at: "x", worker_confirmed_at: null }, true, false)).toBe(false);
     expect(canReview(null, true, false)).toBe(false);
+  });
+  it("starts a new job only after the review, and not on an archived thread", () => {
+    expect(canStartNewJob(both, true, false)).toBe(true);
+    expect(canStartNewJob(both, false, false)).toBe(false);
+    expect(canStartNewJob(both, true, true)).toBe(false);
+    expect(canStartNewJob(null, true, false)).toBe(false);
   });
   it("only the customer can review, once", () => {
     expect(canReview(both, false, false)).toBe(false);

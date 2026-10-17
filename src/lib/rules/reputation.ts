@@ -12,6 +12,11 @@ export function canReview(c: Completion, isCustomer: boolean, alreadyReviewed: b
   return !!c?.customer_confirmed_at && !!c?.worker_confirmed_at && isCustomer && !alreadyReviewed;
 }
 
+/** A finished, reviewed conversation can be archived so the next job starts on a fresh thread. */
+export function canStartNewJob(c: Completion, reviewed: boolean, archived: boolean): boolean {
+  return !!c?.customer_confirmed_at && !!c?.worker_confirmed_at && reviewed && !archived;
+}
+
 export type Ratings = { quality: number; reliability: number; communication: number; value: number };
 
 export function reviewScore(r: Ratings): number {

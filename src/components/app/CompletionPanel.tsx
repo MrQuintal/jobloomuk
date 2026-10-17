@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { canReview } from "@/lib/rules/reputation";
+import { canReview, canStartNewJob } from "@/lib/rules/reputation";
 import { StarPicker, RatingBreakdown } from "@/components/app/StarRating";
 
 const FIELDS = [["quality", "Quality of work"], ["reliability", "Reliability"], ["communication", "Communication"], ["value", "Value"]] as const;
 
-export function CompletionPanel({ convId, uid, customerId, workerId }: { convId: string; uid: string; customerId: string; workerId: string }) {
+export function CompletionPanel({ convId, uid, customerId, workerId, archived = false, onStartNew }: { convId: string; uid: string; customerId: string; workerId: string; archived?: boolean; onStartNew?: () => Promise<void> }) {
   const qc = useQueryClient();
   const key = ["completion", convId];
   const q = useQuery({
@@ -26,6 +26,7 @@ export function CompletionPanel({ convId, uid, customerId, workerId }: { convId:
   const [ratings, setRatings] = useState({ quality: 5, reliability: 5, communication: 5, value: 5 });
   const [body, setBody] = useState("");
   const [reply, setReply] = useState("");
+  const [starting, setStarting] = useState(false);
   if (!q.data) return null;
   const { c, r } = q.data;
   const isCustomer = uid === customerId;
@@ -35,8 +36,8 @@ export function CompletionPanel({ convId, uid, customerId, workerId }: { convId:
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 text-sm">
-      <h2 className="flex items-center gap-2 font-medium"><CheckCircle2 className="size-4" /> Job finished?</h2>
-      <p className="mt-2 text-muted-foreground">When the work is done, both of you confirm here. This unlocks a review. It isn't proof of payment.</p>
+      <h2 className="flex items-center gap-2 font-medium"><CheckCircle2 className="size-4" /> {archived ? "Finished job" : "Job finished?"}</h2>
+      <p className="mt-2 text-muted-foreground">{archived ? "This job is archived. The review stays on the professional's profile." : "When the work is done, both of you confirm here. This unlocks a review. It isn't proof of payment."}</p>
       <p className="mt-2">You: {mine ? "confirmed" : "not yet"} · Other side: {theirs ? "confirmed" : "not yet"}</p>
       {!mine && (
         <Button size="sm" variant="outline" className="mt-3 w-full" onClick={async () => {
@@ -64,6 +65,13 @@ export function CompletionPanel({ convId, uid, customerId, workerId }: { convId:
           <Textarea rows={3} maxLength={2000} value={body} onChange={(e) => setBody(e.target.value)} placeholder="What was it like working together?" />
           <Button size="sm" type="submit" variant="forest" className="w-full" disabled={body.trim().length < 10}>Publish review</Button>
         </form>
+      )}
+
+      {canStartNewJob(c, !!r, archived) && onStartNew && (
+        <Button size="sm" variant="forest" className="mt-4 w-full" disabled={starting} onClick={async () => {
+          setStarting(true);
+          try { await onStartNew(); } finally { setStarting(false); }
+        }}>Start a new job</Button>
       )}
 
       {r && (

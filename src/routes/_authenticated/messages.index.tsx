@@ -27,31 +27,40 @@ function Inbox() {
     },
   });
   const rows = q.data ?? [];
+  const active = rows.filter((c) => !c.archived_at);
+  const finished = rows.filter((c) => c.archived_at);
   const av = useAvatars(rows.map((c) => (c.customer_id === user?.id ? c.worker_id : c.customer_id)));
+  const item = (c: (typeof rows)[number]) => {
+    const otherId = c.customer_id === user?.id ? c.worker_id : c.customer_id;
+    const other = c.customer_id === user?.id ? c.names?.worker_name : c.names?.customer_name;
+    const name = other || "Jobloom member";
+    return (
+      <li key={c.id}>
+        <Link to="/messages/$id" params={{ id: c.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:shadow-sm">
+          <UserAvatar url={av[otherId]} name={name} className="h-10 w-10" />
+          <span>
+            <p className="font-medium">{name}</p>
+            <p className="text-sm text-muted-foreground">{c.archived_at ? "Finished job" : c.names?.job_title ?? "Direct enquiry"} · {new Date(c.last_message_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</p>
+          </span>
+        </Link>
+      </li>
+    );
+  };
   return (
     <>
       <PageTitle title="Messages">Talk directly, agree the work and request a visit.</PageTitle>
       {q.isLoading ? <p className="text-muted-foreground">Loading…</p> : rows.length === 0 ? (
         <p className="text-muted-foreground">No conversations yet.</p>
       ) : (
-        <ul className="grid max-w-3xl gap-2">
-          {rows.map((c) => {
-            const otherId = c.customer_id === user?.id ? c.worker_id : c.customer_id;
-            const other = c.customer_id === user?.id ? c.names?.worker_name : c.names?.customer_name;
-            const name = other || "Jobloom member";
-            return (
-              <li key={c.id}>
-                <Link to="/messages/$id" params={{ id: c.id }} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:shadow-sm">
-                  <UserAvatar url={av[otherId]} name={name} className="h-10 w-10" />
-                  <span>
-                    <p className="font-medium">{name}</p>
-                    <p className="text-sm text-muted-foreground">{c.names?.job_title ?? "Direct enquiry"} · {new Date(c.last_message_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</p>
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="grid max-w-3xl gap-6">
+          {active.length === 0 ? <p className="text-muted-foreground">No current conversations.</p> : <ul className="grid gap-2">{active.map(item)}</ul>}
+          {finished.length > 0 && (
+            <details>
+              <summary className="cursor-pointer text-sm text-muted-foreground">Finished jobs ({finished.length})</summary>
+              <ul className="mt-2 grid gap-2">{finished.map(item)}</ul>
+            </details>
+          )}
+        </div>
       )}
     </>
   );

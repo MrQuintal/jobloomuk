@@ -120,6 +120,13 @@
       "when": 1792272000000,
       "tag": "0016_clear_own_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792275600000,
+      "tag": "0017_archive_finished_job",
+      "breakpoints": true
     }
   ]
 }

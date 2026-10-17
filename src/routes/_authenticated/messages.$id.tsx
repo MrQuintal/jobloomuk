@@ -1,5 +1,5 @@
 import { pageHead } from "@/lib/seo";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ const STATUS_LABEL: Record<BookingStatus, string> = { requested: "Waiting for re
 
 function Thread() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const uid = user!.id;
   const qc = useQueryClient();
@@ -62,11 +63,25 @@ function Thread() {
   }, [id, uid, activity, qc]);
   const refresh = () => qc.invalidateQueries({ queryKey: ["thread", id] });
   const av = useAvatars([q.data?.conv?.customer_id, q.data?.conv?.worker_id]);
+  const party = q.data?.conv;
+  const currentJob = useQuery({
+    queryKey: ["active-with", party?.customer_id, party?.worker_id],
+    enabled: !!party?.archived_at,
+    queryFn: async () => (await supabase.from("conversations").select("id").eq("customer_id", party!.customer_id).eq("worker_id", party!.worker_id).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle()).data,
+  });
 
   if (q.isLoading) return <p className="text-muted-foreground">Loading…</p>;
   if (!q.data?.conv) return <p>Conversation not found.</p>;
   const { conv, names, msgs, books } = q.data;
+  const archived = !!conv.archived_at;
   const other = conv.customer_id === uid ? names?.worker_name : names?.customer_name;
+
+  async function startNewJob() {
+    const { data, error } = await supabase.rpc("start_new_job", { _conv: id });
+    if (error || !data) { toast.error(error?.message ?? "Could not start a new job"); return; }
+    qc.invalidateQueries({ queryKey: ["inbox"] });
+    navigate({ to: "/messages/$id", params: { id: data } });
+  }
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -101,7 +116,7 @@ function Thread() {
             <UserAvatar url={av[conv.customer_id === uid ? conv.worker_id : conv.customer_id]} name={other} className="h-10 w-10" />
             <h1 className="text-xl font-medium">{other || "Jobloom member"}</h1>
           </div>
-          <p className="text-sm text-muted-foreground">{names?.job_title ?? "Direct enquiry"}</p>
+          <p className="text-sm text-muted-foreground">{archived ? "Finished job" : names?.job_title ?? "Direct enquiry"}</p>
         </header>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {msgs.map((m) => (
@@ -121,6 +136,29 @@ function Thread() {
         </form>
       </section>
       <aside className="space-y-4">
+        {archived ? (
+          <div className="rounded-2xl border border-border bg-card p-5 text-sm">
+            <h2 className="font-medium">This job is finished</h2>
+            <p className="mt-2 text-muted-foreground">Visits from this job are archived. Messages stay here.</p>
+            {currentJob.data?.id && currentJob.data.id !== id && (
+              <Link to="/messages/$id" params={{ id: currentJob.data.id }} className="mt-3 inline-block underline">Open the current job</Link>
+            )}
+            {books.length > 0 && (
+              <details className="mt-4">
+                <summary className="cursor-pointer text-muted-foreground">Archived visits ({books.length})</summary>
+                <ul className="mt-3 space-y-3">
+                  {books.map((b) => (
+                    <li key={b.id} className="rounded-lg border border-border p-3">
+                      <p className="font-medium">{new Date(b.starts_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</p>
+                      {b.note && <p className="mt-1">{b.note}</p>}
+                      <p className="mt-1 text-xs text-muted-foreground">{STATUS_LABEL[b.status as BookingStatus]}</p>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+        ) : (
         <div className="rounded-2xl border border-border bg-card p-5">
           <h2 className="flex items-center gap-2 font-medium"><CalendarDays className="size-4" /> Visits</h2>
           {books.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No visits requested yet.</p>}
@@ -146,7 +184,8 @@ function Thread() {
             <Button type="submit" size="sm" variant="outline" className="w-full">Send request</Button>
           </form>
         </div>
-        <CompletionPanel convId={id} uid={uid} customerId={conv.customer_id} workerId={conv.worker_id} />
+        )}
+        <CompletionPanel convId={id} uid={uid} customerId={conv.customer_id} workerId={conv.worker_id} archived={archived} onStartNew={startNewJob} />
         <p className="text-xs text-muted-foreground">Jobloom never takes payment. Agree the price directly and never pay anyone who asks you to pay through an unfamiliar link.</p>
         <ReportButton type="user" id={conv.customer_id === uid ? conv.worker_id : conv.customer_id} label="Report this person" />
       </aside>
