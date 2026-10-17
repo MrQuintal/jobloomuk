@@ -2,7 +2,7 @@ import { pageHead } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Building2, Loader2, Undo2 } from "lucide-react";
+import { Building2, Loader2, Sparkles, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -96,7 +96,7 @@ function UsersAdmin() {
         <div className="overflow-x-auto rounded-2xl border border-border bg-card">
           <table className="w-full text-sm">
             <thead className="bg-muted text-left text-muted-foreground">
-              <tr><th className="p-3">Name</th><th className="p-3">Joined</th><th className="p-3">Roles</th><th className="p-3">Status</th>{canUpgrade && <th className="p-3">Business access</th>}</tr>
+              <tr><th className="p-3">Name</th><th className="p-3">Joined</th><th className="p-3">Roles</th><th className="p-3">Status</th>{canUpgrade && <th className="p-3">Complimentary plan</th>}</tr>
             </thead>
             <tbody>
               {data.map((u) => (
@@ -133,20 +133,26 @@ function UsersAdmin() {
                       {u.account_status === "suspended" ? "Suspended · reactivate" : "Active · suspend"}
                     </button>
                   </td>
-                  {canUpgrade && (
-                    <td className="p-3">
-                      {u.roles.includes("worker") || grants.data?.some((g) => g.user_id === u.id) ? (
-                        <div className="flex flex-col items-start gap-1.5">
-                          <span className="text-xs text-muted-foreground">{grants.data?.some((g) => g.user_id === u.id) ? "Complimentary Business" : "No complimentary upgrade"}</span>
-                          <Button size="sm" variant="outline" disabled={pendingUser !== null || grants.isPending || !!grants.error}
-                            onClick={() => changeBusinessAccess(u.id, u.display_name ?? "this professional", !grants.data?.some((g) => g.user_id === u.id))}>
-                            {pendingUser === u.id ? <Loader2 className="animate-spin" /> : grants.data?.some((g) => g.user_id === u.id) ? <Undo2 /> : <Building2 />}
-                            {grants.data?.some((g) => g.user_id === u.id) ? "Remove upgrade" : "Upgrade to Business"}
-                          </Button>
-                        </div>
-                      ) : <span className="text-muted-foreground">—</span>}
-                    </td>
-                  )}
+                  {canUpgrade && (() => {
+                    const comp = grants.data?.find((g) => g.user_id === u.id)?.tier as "pro" | "business" | undefined;
+                    const busy = pendingUser !== null || grants.isPending || !!grants.error;
+                    const name = u.display_name ?? "this professional";
+                    return (
+                      <td className="p-3">
+                        {u.roles.includes("worker") || comp ? (
+                          <div className="flex flex-col items-start gap-1.5">
+                            <span className="text-xs text-muted-foreground">{comp ? `Complimentary ${comp === "pro" ? "Pro" : "Business"} (free)` : "No complimentary upgrade"}</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {pendingUser === u.id && <Loader2 className="size-4 animate-spin" />}
+                              {comp !== "pro" && <Button size="sm" variant="outline" disabled={busy} onClick={() => changePlan(u.id, name, "pro")}><Sparkles />Upgrade to Pro</Button>}
+                              {comp !== "business" && <Button size="sm" variant="outline" disabled={busy} onClick={() => changePlan(u.id, name, "business")}><Building2 />Upgrade to Business</Button>}
+                              {comp && <Button size="sm" variant="ghost" disabled={busy} onClick={() => changePlan(u.id, name, null)}><Undo2 />Remove upgrade</Button>}
+                            </div>
+                          </div>
+                        ) : <span className="text-muted-foreground">—</span>}
+                      </td>
+                    );
+                  })()}
                 </tr>
               ))}
             </tbody>
