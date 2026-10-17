@@ -138,18 +138,22 @@ function Billing() {
               const pid = PRICE_IDS[t][interval];
               const isCurrent = tier !== "free" && currentPrice === pid;
               const isUpgrade = tier === "pro" && t === "business";
+              const coveredFree = isComplimentary && (accessTier === t || (accessTier === "business" && t === "pro"));
               return (
-                <div key={t} className={`flex flex-col rounded-3xl border bg-card p-6 ${isCurrent ? "border-bloom" : "border-border"}`}>
+                <div key={t} className={`flex flex-col rounded-3xl border bg-card p-6 ${isCurrent || (isComplimentary && accessTier === t) ? "border-bloom" : "border-border"}`}>
                   <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-medium capitalize">{t}</h2>
-                    {isCurrent && <span className="rounded-full bg-bloom px-3 py-1 text-xs text-bloom-foreground">Current plan</span>}
+                    {isComplimentary && accessTier === t ? <span className="rounded-full bg-bloom px-3 py-1 text-xs text-bloom-foreground">Current plan · Complimentary</span>
+                      : isCurrent && <span className="rounded-full bg-bloom px-3 py-1 text-xs text-bloom-foreground">Current plan</span>}
                   </div>
                   <p className="text-sm text-muted-foreground">{PLAN_FEATURES[t].tagline}</p>
                   <p className="mt-4 font-display text-3xl">{formatPence(PRICES_PENCE[t][interval])}<span className="text-base text-muted-foreground">/{interval}</span></p>
                   <ul className="mt-4 flex flex-1 flex-col gap-1.5 text-sm">
                     {PLAN_FEATURES[t].features.slice(0, 6).map((f) => <li key={f} className="flex gap-2"><Check className="size-4 shrink-0 text-bloom" />{f}</li>)}
                   </ul>
-                  {tier === "free" ? (
+                  {coveredFree ? (
+                    <Button className="mt-6" variant="outline" disabled>Included free</Button>
+                  ) : tier === "free" ? (
                     <Button className="mt-6" onClick={() => setPriceId(pid)}>Choose {t}</Button>
                   ) : isCurrent ? (
                     <Button className="mt-6" variant="outline" disabled>Your current plan</Button>
