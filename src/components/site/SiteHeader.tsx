@@ -6,14 +6,19 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "./Logo";
 
-const NAV = [
+const PRIMARY = [
   { to: "/professionals", label: "Find professionals" },
   { to: "/jobs", label: "Find jobs" },
+] as const;
+
+const SECONDARY = [
   { to: "/how-it-works", label: "How it works" },
   { to: "/for-customers", label: "For customers" },
   { to: "/for-professionals", label: "For professionals" },
   { to: "/pricing", label: "Pricing" },
 ] as const;
+
+const primaryLink = "rounded-full bg-secondary px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary/70";
 
 export function SiteHeader() {
   const { user, ready, signOut } = useAuth();
@@ -29,7 +34,14 @@ export function SiteHeader() {
       <div className="container-page flex h-16 items-center justify-between gap-6">
         <Logo />
         <nav className="hidden items-center gap-7 md:flex">
-          {NAV.map((n) => (
+          <div className="flex items-center gap-2">
+            {PRIMARY.map((n) => (
+              <Link key={n.to} to={n.to} className={primaryLink} activeProps={{ className: "ring-1 ring-foreground/25" }}>
+                {n.label}
+              </Link>
+            ))}
+          </div>
+          {SECONDARY.map((n) => (
             <Link key={n.to} to={n.to} className="text-sm text-muted-foreground transition-colors hover:text-foreground" activeProps={{ className: "text-foreground font-medium" }}>
               {n.label}
             </Link>
@@ -56,8 +68,13 @@ export function SiteHeader() {
       {open && (
         <div className="border-t border-border bg-background md:hidden">
           <nav className="container-page flex flex-col gap-1 py-4">
-            {NAV.map((n) => (
-              <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-md px-2 py-2.5 text-base">
+            {PRIMARY.map((n) => (
+              <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-full bg-secondary px-3 py-2.5 text-base font-medium">
+                {n.label}
+              </Link>
+            ))}
+            {SECONDARY.map((n) => (
+              <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="rounded-md px-2 py-2.5 text-base text-muted-foreground">
                 {n.label}
               </Link>
             ))}
