@@ -33,7 +33,7 @@ function UsersAdmin() {
     queryKey: ["admin-business-grants"],
     enabled: canUpgrade,
     queryFn: async () => {
-      const { data, error } = await supabase.from("business_access_grants").select("user_id");
+      const { data, error } = await supabase.from("business_access_grants").select("user_id, tier");
       if (error) throw error;
       return data ?? [];
     },
@@ -60,15 +60,16 @@ function UsersAdmin() {
     qc.invalidateQueries({ queryKey: ["admin-users"] });
   }
 
-  async function changeBusinessAccess(userId: string, name: string, grant: boolean) {
+  async function changePlan(userId: string, name: string, tier: "pro" | "business" | null) {
     if (!canUpgrade || pendingUser) return;
-    const prompt = grant
-      ? `Grant complimentary Business access to ${name}? All Business tools unlock immediately. Existing subscription charges are unchanged.`
-      : `Remove complimentary Business access for ${name}? Their access returns to their paid plan, or Free. Existing subscription charges are unchanged.`;
+    const label = tier === "pro" ? "Pro" : "Business";
+    const prompt = tier
+      ? `Give ${name} a complimentary ${label} plan for free? ${label} tools unlock immediately. Existing subscription charges are unchanged.`
+      : `Remove the complimentary plan for ${name}? Their access returns to their paid plan, or Free. Existing subscription charges are unchanged.`;
     if (!window.confirm(prompt)) return;
     setPendingUser(userId);
     try {
-      const { error } = await supabase.rpc("admin_set_business_access", { _user_id: userId, _grant: grant });
+      const { error } = await supabase.rpc("admin_set_complimentary_tier", { _user_id: userId, _tier: tier as string });
       if (error) throw error;
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["admin-business-grants"] }),
@@ -76,9 +77,9 @@ function UsersAdmin() {
         qc.invalidateQueries({ queryKey: ["tier"] }),
         qc.invalidateQueries({ queryKey: ["admin-audit"] }),
       ]);
-      toast.success(grant ? "Business access granted" : "Complimentary Business access removed");
+      toast.success(tier ? `Complimentary ${label} granted` : "Complimentary plan removed");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Couldn't change Business access. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Couldn't change the plan. Please try again.");
     } finally {
       setPendingUser(null);
     }

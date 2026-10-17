@@ -18,6 +18,11 @@ describe("plans", () => {
     expect(effectiveTier(null, false, now)).toBe("free");
     expect(effectiveTier({ status: "active", price_id: "business_monthly", current_period_end: future }, false, now)).toBe("business");
   });
+  it("a complimentary Pro grant gives Pro to a free user but never lowers a paid Business plan", () => {
+    expect(effectiveTier(null, "pro", now)).toBe("pro");
+    expect(effectiveTier({ status: "active", price_id: "business_monthly", current_period_end: future }, "pro", now)).toBe("business");
+    expect(effectiveTier({ status: "active", price_id: "pro_monthly", current_period_end: future }, "business", now)).toBe("business");
+  });
   it("Pro is £6/month and Business £10/month", () => {
     expect(PRICES_PENCE.pro.month).toBe(600);
     expect(PRICES_PENCE.business.month).toBe(1000);
