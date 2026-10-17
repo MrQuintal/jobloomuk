@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PageTitle } from "@/components/app/AppShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +52,49 @@ function PhotoSection({ uid, name }: { uid: string; name: string }) {
   );
 }
 
+function SignInDetails({ email }: { email: string }) {
+  const [nextEmail, setNextEmail] = useState(email);
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState<"email" | "password" | null>(null);
+
+  async function saveEmail(e: React.FormEvent) {
+    e.preventDefault();
+    const value = nextEmail.trim();
+    if (!value || value.toLowerCase() === email.toLowerCase()) return;
+    setBusy("email");
+    const { error } = await supabase.auth.updateUser({ email: value });
+    setBusy(null);
+    if (error) toast.error(error.message);
+    else toast.success("Check your inbox to confirm the new email. It changes after you confirm it.");
+  }
+
+  async function savePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy("password");
+    const { error } = await supabase.auth.updateUser({ password });
+    setBusy(null);
+    if (error) toast.error(error.message);
+    else { setPassword(""); toast.success("Password updated"); }
+  }
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-6">
+      <h2 className="text-lg font-medium">Email and password</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Used to sign in on the website.</p>
+      <form className="mt-4 grid gap-2" onSubmit={(e) => void saveEmail(e)}>
+        <Label htmlFor="account-email">Email</Label>
+        <Input id="account-email" type="email" required value={nextEmail} onChange={(e) => setNextEmail(e.target.value)} />
+        <Button type="submit" variant="outline" className="w-fit" disabled={busy !== null}>Update email</Button>
+      </form>
+      <form className="mt-6 grid gap-2" onSubmit={(e) => void savePassword(e)}>
+        <Label htmlFor="account-password">New password</Label>
+        <Input id="account-password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+        <Button type="submit" variant="outline" className="w-fit" disabled={busy !== null}>{busy === "password" ? "Saving…" : "Update password"}</Button>
+      </form>
+    </section>
+  );
+}
+
 export const Route = createFileRoute("/_authenticated/account")({
   staticData: { sitemap: false },
   head: () => {
@@ -89,6 +134,7 @@ function Account() {
       <PageTitle title="Account & privacy">Your data belongs to you.</PageTitle>
       <div className="grid max-w-2xl gap-6">
         <PhotoSection uid={uid} name={user!.email ?? ""} />
+        <SignInDetails email={user!.email ?? ""} />
         <section className="rounded-2xl border border-border bg-card p-6">
           <h2 className="text-lg font-medium">Download your data</h2>
           <p className="mt-1 text-sm text-muted-foreground">Get a copy of everything linked to your account as a file.</p>

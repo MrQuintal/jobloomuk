@@ -55,7 +55,7 @@ function Pro() {
   const [photo, setPhoto] = useState<{ images: string[]; title: string; start: number } | null>(null);
   if (!data) return null;
   const { pro, projects, slots, reviews, summary, team, bannerUrl, branches } = data;
-  useEffect(() => { void supabase.from("profile_events").insert({ worker_id: pro.user_id, kind: "view" }); }, [pro.user_id]);
+  useEffect(() => { void supabase.rpc("record_profile_event", { _worker: pro.user_id, _kind: "view" }).then(() => undefined); }, [pro.user_id]);
   const av = useAvatars([pro.user_id]);
   return (
     <PageShell>
@@ -186,7 +186,7 @@ function ContactBox({ workerId, name }: { workerId: string; name: string }) {
         const { data, error } = await supabase.rpc("start_conversation_with_worker", { _worker_id: workerId, _body: body.trim() });
         setBusy(false);
         if (error) { toast.error(error.message); return; }
-        void supabase.from("profile_events").insert({ worker_id: workerId, kind: "enquiry" });
+        void supabase.rpc("record_profile_event", { _worker: workerId, _kind: "enquiry" }).then(() => undefined);
         navigate({ to: "/messages/$id", params: { id: data } });
       }}
     >

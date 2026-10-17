@@ -58,6 +58,17 @@ export function AppShell({ children }: { children: ReactNode }) {
               {!!l.badge && <span className="ml-auto rounded-full bg-bloom px-2 py-0.5 text-xs font-semibold text-bloom-foreground">{l.badge}</span>}
             </Link>
           ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground md:hidden"
+            onClick={async () => {
+              await signOut();
+              navigate({ to: "/" });
+            }}
+          >
+            <LogOut /> Sign out
+          </Button>
         </nav>
         <div className="mt-auto hidden text-xs md:block">
           <p className="truncate text-sidebar-foreground/80">{user?.email}</p>

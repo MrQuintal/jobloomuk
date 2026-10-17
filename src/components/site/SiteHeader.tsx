@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { HeaderAvatar } from "@/components/app/HeaderAvatar";
@@ -16,8 +16,14 @@ const NAV = [
 ] as const;
 
 export function SiteHeader() {
-  const { user, ready } = useAuth();
+  const { user, ready, signOut } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  async function logOut() {
+    await signOut();
+    setOpen(false);
+    await navigate({ to: "/" });
+  }
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between gap-6">
@@ -34,6 +40,7 @@ export function SiteHeader() {
             <>
               <HeaderAvatar />
               <Button asChild variant="forest"><Link to="/dashboard">My dashboard</Link></Button>
+              <Button variant="ghost" onClick={() => void logOut()}>Log out</Button>
             </>
           ) : (
             <>
@@ -58,7 +65,8 @@ export function SiteHeader() {
               {user ? (
                 <>
                   <HeaderAvatar />
-                  <Button asChild variant="forest" className="flex-1"><Link to="/dashboard">My dashboard</Link></Button>
+                  <Button asChild variant="forest" className="flex-1"><Link to="/dashboard" onClick={() => setOpen(false)}>My dashboard</Link></Button>
+                  <Button variant="outline" className="flex-1" onClick={() => void logOut()}>Log out</Button>
                 </>
               ) : (
                 <>

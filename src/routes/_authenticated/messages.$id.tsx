@@ -64,6 +64,17 @@ function Thread() {
   const refresh = () => qc.invalidateQueries({ queryKey: ["thread", id] });
   const av = useAvatars([q.data?.conv?.customer_id, q.data?.conv?.worker_id]);
   const party = q.data?.conv;
+  const otherId = party ? (party.customer_id === uid ? party.worker_id : party.customer_id) : undefined;
+  const business = useQuery({
+    queryKey: ["chat-business", otherId],
+    enabled: !!otherId,
+    queryFn: async () => (await supabase.from("worker_profiles").select("slug").eq("user_id", otherId!).eq("is_published", true).maybeSingle()).data,
+  });
+  const jobSummary = useQuery({
+    queryKey: ["conv-job", id, party?.job_id],
+    enabled: !!party?.job_id,
+    queryFn: async () => (await supabase.rpc("conversation_job_summary", { _conv: id })).data?.[0] ?? null,
+  });
   const currentJob = useQuery({
     queryKey: ["active-with", party?.customer_id, party?.worker_id],
     enabled: !!party?.archived_at,
@@ -122,10 +133,20 @@ function Thread() {
         <header className="border-b border-border p-4">
           <Link to="/messages" className="mb-1 flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3" /> All messages</Link>
           <div className="flex items-center gap-3">
-            <UserAvatar url={av[conv.customer_id === uid ? conv.worker_id : conv.customer_id]} name={other} className="h-10 w-10" />
-            <h1 className="text-xl font-medium">{other || "Jobloom member"}</h1>
+            {business.data?.slug ? (
+              <Link to="/pro/$slug" params={{ slug: business.data.slug }} className="flex items-center gap-3">
+                <UserAvatar url={av[conv.customer_id === uid ? conv.worker_id : conv.customer_id]} name={other} className="h-10 w-10" />
+                <h1 className="text-xl font-medium underline-offset-4 hover:underline">{other || "Jobloom member"}</h1>
+              </Link>
+            ) : (
+              <>
+                <UserAvatar url={av[conv.customer_id === uid ? conv.worker_id : conv.customer_id]} name={other} className="h-10 w-10" />
+                <h1 className="text-xl font-medium">{other || "Jobloom member"}</h1>
+              </>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground">{archived ? "Finished job" : names?.job_title ?? "Direct enquiry"}</p>
+          <p className="text-sm text-muted-foreground">{archived ? "Finished job" : jobSummary.data?.title ?? names?.job_title ?? "Direct enquiry"}</p>
+          {jobSummary.data?.description && <p className="mt-2 whitespace-pre-line text-sm">{jobSummary.data.description}</p>}
           <Button type="button" variant="ghost" size="sm" className="mt-2 -ml-3" onClick={() => void removeFromInbox()}>Remove from inbox</Button>
         </header>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">

@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import type { JobStatus } from "@/lib/rules/marketplace";
 import { pageHead } from "@/lib/seo";
 import { PricingGuidance } from "@/components/app/PricingGuidance";
+import { JobPhotos } from "@/components/app/JobPhotos";
 import { sendJobAlertEmails } from "@/lib/alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/customer")({
@@ -85,6 +86,7 @@ function CustomerPage() {
                 <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs text-accent-foreground">{STATUS_LABEL[j.status as JobStatus]}</span>
               </div>
               <p className="mt-3 whitespace-pre-line text-sm">{j.description}</p>
+              <JobPhotos paths={j.image_paths} />
               <div className="mt-4 flex flex-wrap gap-2">
                 {j.status === "open" && <Button size="sm" variant="outline" onClick={() => setStatus(j.id, "paused")}>Pause</Button>}
                 {j.status === "paused" && <Button size="sm" variant="outline" onClick={() => setStatus(j.id, "open")}>Reopen</Button>}
@@ -121,9 +123,20 @@ function PostJob({ uid, onDone }: { uid: string; onDone: () => void }) {
   const cats = useQuery({ queryKey: ["cats-client"], queryFn: async () => (await supabase.from("categories").select("id, name, slug").eq("is_active", true).order("sort_order")).data ?? [] });
   const empty = { title: "", description: "", category_id: "", area: "", timing: "", budget_note: "" };
   const [f, setF] = useState(empty);
+  const [photos, setPhotos] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
+  function choosePhotos(list: FileList | null) {
+    const picked = Array.from(list ?? []);
+    if (picked.length > 3) toast.error("You can add up to 3 photos");
+    const next = picked.slice(0, 3);
+    if (next.some((file) => (file.type && !file.type.startsWith("image/")) || file.size > 8 * 1024 * 1024)) {
+      toast.error("Each photo must be an image under 8 MB");
+      return;
+    }
+    setPhotos(next);
+  }
   if (!open) return <Button variant="bloom" className="w-fit" onClick={() => setOpen(true)}>Post a job</Button>;
   return (
     <form
@@ -136,11 +149,24 @@ function PostJob({ uid, onDone }: { uid: string; onDone: () => void }) {
           customer_id: uid, title: f.title.trim(), description: f.description.trim(), area: f.area.trim(),
           category_id: f.category_id || null, timing: f.timing.trim() || null, budget_note: f.budget_note.trim() || null,
         }).select("id").single();
+        if (error || !created) { setBusy(false); toast.error(error?.message ?? "Couldn't post the job"); return; }
+        const paths: string[] = [];
+        for (const [index, file] of photos.entries()) {
+          const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+          const path = `${uid}/${created.id}-${index}.${ext}`;
+          const up = await supabase.storage.from("job-photos").upload(path, file, { contentType: file.type || "image/jpeg" });
+          if (up.error) { toast.error(up.error.message); break; }
+          paths.push(path);
+        }
+        if (paths.length) {
+          const saved = await supabase.from("jobs").update({ image_paths: paths }).eq("id", created.id);
+          if (saved.error) toast.error(saved.error.message);
+        }
         setBusy(false);
-        if (error) { toast.error(error.message); return; }
         toast.success("Job posted");
         sendJobAlertEmails({ data: { jobId: created.id } }).catch(() => {});
         setF(empty);
+        setPhotos([]);
         setOpen(false);
         onDone();
       }}
@@ -158,6 +184,8 @@ function PostJob({ uid, onDone }: { uid: string; onDone: () => void }) {
         <div><Label>Area (town or postcode district)</Label><Input value={f.area} onChange={set("area")} maxLength={80} placeholder="e.g. LS6" /></div>
         <div><Label>When</Label><Input value={f.timing} onChange={set("timing")} maxLength={80} placeholder="e.g. Within 2 weeks" /></div>
         <div><Label>Budget guide (optional)</Label><Input value={f.budget_note} onChange={set("budget_note")} maxLength={80} /></div>
+        <div className="md:col-span-2"><Label>Photos (up to 3)</Label><Input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(e) => { choosePhotos(e.target.files); e.target.value = ""; }} /></div>
+        {photos.length > 0 && <p className="md:col-span-2 text-sm text-muted-foreground">{photos.map((file) => file.name).join(", ")}</p>}
         <PricingGuidance slug={cats.data?.find((category) => category.id === f.category_id)?.slug} name={cats.data?.find((category) => category.id === f.category_id)?.name} />
       </div>
       <p className="mt-4 text-xs text-muted-foreground">Don't include your full address or phone number. You agree price and payment directly with the professional — Jobloom never takes payment.</p>

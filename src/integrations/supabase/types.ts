@@ -338,6 +338,7 @@ export type Database = {
           customer_id: string
           description: string
           id: string
+          image_paths: string[]
           status: string
           timing: string | null
           title: string
@@ -351,6 +352,7 @@ export type Database = {
           customer_id: string
           description: string
           id?: string
+          image_paths?: string[]
           status?: string
           timing?: string | null
           title: string
@@ -364,6 +366,7 @@ export type Database = {
           customer_id?: string
           description?: string
           id?: string
+          image_paths?: string[]
           status?: string
           timing?: string | null
           title?: string
@@ -1047,6 +1050,13 @@ export type Database = {
         Returns: undefined
       }
       confirm_completion: { Args: { _conv: string }; Returns: undefined }
+      conversation_job_summary: {
+        Args: { _conv: string }
+        Returns: {
+          description: string
+          title: string
+        }[]
+      }
       conversation_party_names: {
         Args: { _conv: string }
         Returns: {
@@ -1081,6 +1091,10 @@ export type Database = {
         Returns: undefined
       }
       plan_tier: { Args: { _u: string }; Returns: string }
+      record_profile_event: {
+        Args: { _kind: string; _worker: string }
+        Returns: undefined
+      }
       public_avatars: {
         Args: { _ids: string[] }
         Returns: {
