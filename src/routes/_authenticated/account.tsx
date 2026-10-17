@@ -9,21 +9,27 @@ import { PageTitle } from "@/components/app/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
+import { BannerCropper } from "@/components/app/BannerCropper";
 
 function PhotoSection({ uid, name }: { uid: string; name: string }) {
   const qc = useQueryClient();
   const av = useAvatars([uid]);
   const [busy, setBusy] = useState(false);
-  async function upload(file: File) {
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  function choose(file: File) {
     if (!file.type.startsWith("image/")) { toast.error("Please choose an image"); return; }
     if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5MB"); return; }
+    setCropFile(file);
+  }
+  async function upload(blob: Blob) {
     setBusy(true);
-    const path = `${uid}/${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
-    const up = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    const path = `${uid}/${Date.now()}.jpg`;
+    const up = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (up.error) { toast.error(up.error.message); setBusy(false); return; }
     const { error } = await supabase.from("profiles").update({ avatar_url: path }).eq("id", uid);
     setBusy(false);
     if (error) { toast.error(error.message); return; }
+    setCropFile(null);
     toast.success("Profile photo updated");
     qc.invalidateQueries({ queryKey: ["avatars"] });
   }
@@ -38,11 +44,25 @@ function PhotoSection({ uid, name }: { uid: string; name: string }) {
       <div className="mt-4 flex items-center gap-4">
         <UserAvatar url={av[uid]} name={name} className="h-20 w-20" />
         <label className="cursor-pointer">
-          <input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); e.target.value = ""; }} />
+          <input type="file" accept="image/*" className="sr-only" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) choose(f); e.target.value = ""; }} />
           <span className="inline-flex h-9 items-center rounded-md border border-input px-4 text-sm hover:bg-accent">{busy ? "Uploading…" : "Upload photo"}</span>
         </label>
         {av[uid] && <Button variant="ghost" size="sm" onClick={remove}>Remove</Button>}
       </div>
+      {cropFile && (
+        <BannerCropper
+          file={cropFile}
+          busy={busy}
+          outputWidth={800}
+          outputHeight={800}
+          maxBytes={5 * 1024 * 1024}
+          hint="Drag the photo and use the slider. Zoom out to fit the whole photo. The saved photo is square."
+          frameClassName="aspect-square w-full max-w-72 rounded-full"
+          alt="Profile photo crop preview"
+          onCancel={() => setCropFile(null)}
+          onConfirm={(blob) => void upload(blob)}
+        />
+      )}
     </section>
   );
 }

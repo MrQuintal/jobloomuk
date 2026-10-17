@@ -1,12 +1,31 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { bannerDisplaySize, bannerSourceRect, clampBannerOffset } from "@/lib/banner-crop";
+import { bannerDestRect, bannerDisplaySize, clampBannerOffset, minCoverZoom } from "@/lib/banner-crop";
 
-const OUTPUT_W = 1600;
-const OUTPUT_H = 400;
-
-export function BannerCropper({ file, busy, onCancel, onConfirm }: { file: File; busy: boolean; onCancel: () => void; onConfirm: (blob: Blob) => void }) {
+export function BannerCropper({
+  file,
+  busy,
+  onCancel,
+  onConfirm,
+  outputWidth = 1600,
+  outputHeight = 400,
+  maxBytes = 8 * 1024 * 1024,
+  hint = "Drag the photo and use the slider. Zoom out to fit the whole photo. The saved banner is 1600 × 400 px, 4:1.",
+  frameClassName = "aspect-[4/1] w-full rounded-lg",
+  alt = "Banner crop preview",
+}: {
+  file: File;
+  busy: boolean;
+  onCancel: () => void;
+  onConfirm: (blob: Blob) => void;
+  outputWidth?: number;
+  outputHeight?: number;
+  maxBytes?: number;
+  hint?: string;
+  frameClassName?: string;
+  alt?: string;
+}) {
   const frameRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
@@ -49,13 +68,16 @@ export function BannerCropper({ file, busy, onCancel, onConfirm }: { file: File;
     });
   }, [natural, frame.w, frame.h]);
 
+  const minZoom = natural && frame.w > 0 ? minCoverZoom(frame.w, frame.h, natural.w, natural.h) : 1;
+
   function changeZoom(next: number) {
     if (!natural || frame.w === 0) return;
+    const clamped = Math.min(3, Math.max(minZoom, next));
     const before = bannerDisplaySize(frame.w, frame.h, natural.w, natural.h, zoom);
-    const after = bannerDisplaySize(frame.w, frame.h, natural.w, natural.h, next);
+    const after = bannerDisplaySize(frame.w, frame.h, natural.w, natural.h, clamped);
     const cx = frame.w / 2;
     const cy = frame.h / 2;
-    setZoom(next);
+    setZoom(clamped);
     setOffset({
       x: clampBannerOffset(frame.w, after.width, cx - ((cx - offset.x) / before.width) * after.width),
       y: clampBannerOffset(frame.h, after.height, cy - ((cy - offset.y) / before.height) * after.height),
@@ -65,21 +87,25 @@ export function BannerCropper({ file, busy, onCancel, onConfirm }: { file: File;
   async function confirm() {
     const img = imageRef.current;
     if (!img || !natural || frame.w === 0) return;
-    const { sx, sy, sw, sh } = bannerSourceRect(frame.w, frame.h, natural.w, natural.h, zoom, offset.x, offset.y);
     const canvas = document.createElement("canvas");
-    canvas.width = OUTPUT_W;
-    canvas.height = OUTPUT_H;
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, OUTPUT_W, OUTPUT_H);
+    const frameEl = frameRef.current;
+    if (!ctx || !frameEl) return;
+    ctx.fillStyle = getComputedStyle(frameEl).backgroundColor;
+    ctx.fillRect(0, 0, outputWidth, outputHeight);
+    const dest = bannerDestRect(frame.w, frame.h, outputWidth, outputHeight, natural.w, natural.h, zoom, offset.x, offset.y);
+    ctx.drawImage(img, dest.x, dest.y, dest.width, dest.height);
     let quality = 0.92;
     let blob: Blob | null = null;
+    const limitLabel = `${Math.round(maxBytes / (1024 * 1024))} MB`;
     while (quality >= 0.5) {
       blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
-      if (blob && blob.size <= 8 * 1024 * 1024) break;
+      if (blob && blob.size <= maxBytes) break;
       quality -= 0.1;
     }
-    if (!blob || blob.size > 8 * 1024 * 1024) { toast.error("That crop is still over 8 MB. Zoom in a little and try again."); return; }
+    if (!blob || blob.size > maxBytes) { toast.error(`That crop is still over ${limitLabel}. Zoom in a little and try again.`); return; }
     onConfirm(blob);
   }
 
@@ -87,10 +113,10 @@ export function BannerCropper({ file, busy, onCancel, onConfirm }: { file: File;
 
   return (
     <div className="mt-3 grid gap-3">
-      <p className="text-muted-foreground">Drag the photo and use the slider. The saved banner is 1600 × 400 px, 4:1.</p>
+      <p className="text-muted-foreground">{hint}</p>
       <div
         ref={frameRef}
-        className="relative aspect-[4/1] w-full cursor-grab touch-none overflow-hidden rounded-lg bg-muted active:cursor-grabbing"
+        className={`relative cursor-grab touch-none overflow-hidden bg-muted active:cursor-grabbing ${frameClassName}`}
         onPointerDown={(e) => {
           if (!natural) return;
           e.currentTarget.setPointerCapture(e.pointerId);
@@ -111,7 +137,7 @@ export function BannerCropper({ file, busy, onCancel, onConfirm }: { file: File;
         {url && (
           <img
             src={url}
-            alt="Banner crop preview"
+            alt={alt}
             draggable={false}
             onLoad={(e) => {
               imageRef.current = e.currentTarget;
@@ -124,7 +150,7 @@ export function BannerCropper({ file, busy, onCancel, onConfirm }: { file: File;
       </div>
       <label className="flex items-center gap-3 text-xs text-muted-foreground">
         Zoom
-        <input aria-label="Zoom" type="range" min={1} max={3} step={0.01} value={zoom} disabled={!natural || busy} onChange={(e) => changeZoom(Number(e.target.value))} className="w-full" />
+        <input aria-label="Zoom" type="range" min={minZoom} max={3} step={0.01} value={zoom} disabled={!natural || busy} onChange={(e) => changeZoom(Number(e.target.value))} className="w-full" />
       </label>
       <div className="flex gap-2">
         <Button type="button" variant="forest" size="sm" disabled={!natural || busy} onClick={() => void confirm()}>{busy ? "Saving…" : "Use this crop"}</Button>

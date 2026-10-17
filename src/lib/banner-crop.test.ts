@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bannerDisplaySize, bannerSourceRect, clampBannerOffset } from "./banner-crop";
+import { bannerDisplaySize, bannerSourceRect, clampBannerOffset, minCoverZoom } from "./banner-crop";
 
 describe("banner crop", () => {
   it("maps the frame back onto the photo", () => {
@@ -21,5 +21,20 @@ describe("banner crop", () => {
     const size = bannerDisplaySize(800, 200, 400, 400, 1);
     expect(size.width).toBeGreaterThanOrEqual(800);
     expect(size.height).toBeGreaterThanOrEqual(200);
+  });
+
+  it("fits the whole photo at the furthest zoom out", () => {
+    const zoom = minCoverZoom(800, 200, 400, 400);
+    const size = bannerDisplaySize(800, 200, 400, 400, zoom);
+    expect(size.width).toBeLessThanOrEqual(800);
+    expect(size.height).toBeLessThanOrEqual(200);
+    expect(size.width).toBeCloseTo(200, 5);
+    expect(size.height).toBeCloseTo(200, 5);
+  });
+
+  it("keeps a zoomed-out photo inside the frame", () => {
+    expect(clampBannerOffset(200, 100, -10)).toBe(0);
+    expect(clampBannerOffset(200, 100, 150)).toBe(100);
+    expect(clampBannerOffset(200, 100, 40)).toBe(40);
   });
 });
