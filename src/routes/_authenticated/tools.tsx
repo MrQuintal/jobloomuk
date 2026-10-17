@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { aiWrite } from "@/lib/ai.functions";
 import { conversionRate, LEAD_STAGES, tierAtLeast, type PlanTier } from "@/lib/rules/plans";
+import defaultBanner from "@/assets/default-profile-banner.png";
 
 export const Route = createFileRoute("/_authenticated/tools")({
   staticData: { sitemap: false },
@@ -251,7 +252,9 @@ function Branding({ uid }: { uid: string }) {
     <div className="grid gap-4 text-sm">
       <div>
         <p className="font-medium">Profile banner</p>
-        <p className="text-muted-foreground">{bannerPath ? "Banner is showing on your public profile." : "Wide photo shown across the top of your profile (recommended 1600 × 400 px, 4:1 aspect ratio, under 8 MB)."}</p>
+        <p className="text-muted-foreground">{bannerPath ? "Your banner is showing on your public profile." : "The Jobloom banner is showing on your public profile until you upload your own (recommended 1600 × 400 px, 4:1 aspect ratio, under 8 MB)."}</p>
+        {!bannerPath && <img src={defaultBanner} alt="Default Jobloom profile banner" className="mt-2 h-24 w-full rounded-lg object-cover" />}
+        <a href={defaultBanner} download="jobloom-banner-template-1600x400.png" className="mt-2 inline-block text-xs text-muted-foreground underline">Template size download for sizing</a>
         <Input className="mt-2" type="file" accept="image/*" disabled={busy} onChange={async (e) => {
           const file = e.target.files?.[0];
           if (!file) return;

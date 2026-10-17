@@ -15,6 +15,7 @@ import { WEEKDAYS, isValidMessage } from "@/lib/rules/marketplace";
 import { ReportButton } from "@/components/app/ReportButton";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 import { RatingBreakdown } from "@/components/app/StarRating";
+import defaultBanner from "@/assets/default-profile-banner.png";
 
 const proQ = (slug: string) => queryOptions({ queryKey: ["pro", slug], queryFn: () => getPro({ data: { slug } }) });
 
@@ -56,7 +57,7 @@ function Pro() {
   const av = useAvatars([pro.user_id]);
   return (
     <PageShell>
-      {bannerUrl && <img src={bannerUrl} alt={`${pro.business_name} banner`} className="h-48 w-full object-cover md:h-72" />}
+      <img src={bannerUrl ?? defaultBanner} alt={bannerUrl ? `${pro.business_name} banner` : "Jobloom banner"} className="h-48 w-full object-cover md:h-72" />
       <section className="container-page grid gap-10 py-14 md:grid-cols-[1fr_22rem]">
         <div>
           <p className="eyebrow">{pro.worker_specialisms.map((s) => s.categories?.name).filter(Boolean).join(" · ")}</p>
