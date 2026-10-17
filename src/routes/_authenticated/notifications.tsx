@@ -2,7 +2,8 @@ import { pageHead } from "@/lib/seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Check, CheckCheck, Volume2, VolumeX } from "lucide-react";
+import { Check, CheckCheck, Trash2, Volume2, VolumeX } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { PageTitle } from "@/components/app/AppShell";
@@ -42,6 +43,14 @@ function Notifications() {
     await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", user!.id).is("read_at", null);
     refresh();
   }
+  async function clearAll() {
+    if (!q.data?.length) return;
+    if (!window.confirm("Clear all notifications? This empties the list.")) return;
+    const { error } = await supabase.from("notifications").delete().eq("user_id", user!.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Notifications cleared");
+    refresh();
+  }
   async function markOne(id: string) {
     await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id).is("read_at", null);
     refresh();
@@ -60,6 +69,7 @@ function Notifications() {
           {unread ? `${unread} unread` : "All caught up"}
         </span>
         <Button size="sm" variant="outline" onClick={markAll} disabled={!unread}><CheckCheck /> Mark all as read</Button>
+        <Button size="sm" variant="outline" onClick={clearAll} disabled={!q.data?.length}><Trash2 /> Clear all</Button>
         <label className="ml-auto flex items-center gap-2 text-sm">
           {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
           Sound {sound ? "on" : "off"}
