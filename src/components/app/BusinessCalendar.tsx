@@ -151,7 +151,7 @@ export function BusinessCalendar({ uid }: { uid: string }) {
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-muted-foreground">Click a day to see who is coming, write a note, and record the amount. A highlighted day is one both sides have agreed. Requesting a time tells the customer. Jobloom does not collect the money.</p>
+      <p className="text-sm text-muted-foreground">Click a day to see who is coming, write a note, and record the amount. Cancel on the day, on the appointment, or in Coming up. Both of you are notified. Jobloom does not collect the money.</p>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Button type="button" size="icon" variant="outline" aria-label="Previous month" onClick={() => shift(-1)}><ChevronLeft /></Button>
@@ -178,27 +178,27 @@ export function BusinessCalendar({ uid }: { uid: string }) {
           const agreed = dayVisits.some((visit) => isAgreedVisit(visit.status));
           const total = dayTakings(dayVisits.filter((visit) => isAgreedVisit(visit.status)).map((visit) => visit.amount_pence));
           return (
-            <button
+            <div
               key={key}
-              type="button"
-              disabled={day == null}
-              onClick={() => day != null && setSelected(key)}
               className={`min-h-24 rounded-lg border p-1 text-left text-xs ${day == null ? "border-transparent" : agreed ? "border-bloom bg-bloom/15" : "border-border"} ${key === today ? "ring-1 ring-primary" : ""} ${key === selected ? "outline outline-2 outline-offset-1 outline-primary" : ""}`}
             >
               {day != null && (
                 <>
-                  <p className="font-medium">{day}</p>
+                  <button type="button" className="font-medium" onClick={() => setSelected(key)}>{day}</button>
                   <ul className="mt-1 grid gap-1">
                     {dayVisits.map((visit) => (
-                      <li key={visit.id} className={`truncate rounded px-1 py-0.5 ${isAgreedVisit(visit.status) ? "bg-background" : "border border-dashed border-border"}`}>
-                        {new Date(visit.starts_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} {visit.customer}
+                      <li key={visit.id} className={`rounded px-1 py-0.5 ${isAgreedVisit(visit.status) ? "bg-background" : "border border-dashed border-border"}`}>
+                        <button type="button" className="block w-full truncate text-left" onClick={() => setSelected(key)}>
+                          {new Date(visit.starts_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} {visit.customer}
+                        </button>
+                        {visit.open && <button type="button" className="underline" aria-label={`Cancel ${visit.customer}`} onClick={() => void cancelVisit(visit)}>Cancel</button>}
                       </li>
                     ))}
                   </ul>
                   {total > 0 && <p className="mt-1 font-medium">{formatPence(total)}</p>}
                 </>
               )}
-            </button>
+            </div>
           );
         })}
       </div>
@@ -216,7 +216,10 @@ export function BusinessCalendar({ uid }: { uid: string }) {
                   <p className="text-muted-foreground">{new Date(visit.starts_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} · {visit.title}{visit.who ? ` · ${visit.who}` : ""}</p>
                   <p className="text-xs text-muted-foreground">{isAgreedVisit(visit.status) ? "Agreed" : "Waiting for a reply"}</p>
                 </div>
-                <Link to="/messages/$id" params={{ id: visit.conversation_id }} className="underline">Open chat</Link>
+                <div className="flex items-center gap-3">
+                  <Link to="/messages/$id" params={{ id: visit.conversation_id }} className="underline">Open chat</Link>
+                  {visit.open && <button type="button" className="underline" aria-label={`Cancel ${visit.customer} on this day`} onClick={() => void cancelVisit(visit)}>Cancel</button>}
+                </div>
               </div>
               <Label className="mt-3 block" htmlFor={`note-${visit.id}`}>Note</Label>
               <textarea
@@ -259,7 +262,6 @@ export function BusinessCalendar({ uid }: { uid: string }) {
                     </div>
                     <Button type="submit" size="sm" variant="outline">Send new time</Button>
                   </form>
-                  <Button type="button" size="sm" variant="outline" onClick={() => void cancelVisit(visit)}>Cancel</Button>
                 </div>
               )}
             </li>
@@ -292,10 +294,11 @@ export function BusinessCalendar({ uid }: { uid: string }) {
         {upcoming.length === 0 && <p className="mt-1 text-sm text-muted-foreground">No visits from today onwards.</p>}
         <ul className="mt-2 grid gap-1 text-sm">
           {upcoming.map((visit) => (
-            <li key={visit.id}>
+            <li key={visit.id} className="flex flex-wrap items-center justify-between gap-2">
               <button type="button" className="underline" onClick={() => showDay(visitDayKey(visit.starts_at))}>
                 {new Date(visit.starts_at).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {visit.customer} · {visit.title}
               </button>
+              {visit.open && <button type="button" className="underline" aria-label={`Cancel ${visit.customer} coming up`} onClick={() => void cancelVisit(visit)}>Cancel</button>}
             </li>
           ))}
         </ul>
