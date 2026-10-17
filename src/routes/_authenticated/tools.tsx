@@ -250,7 +250,7 @@ function Branding({ uid }: { uid: string }) {
     <div className="grid gap-4 text-sm">
       <div>
         <p className="font-medium">Profile banner</p>
-        <p className="text-muted-foreground">{current.banner_path ? "Banner is showing on your public profile." : "Wide photo shown across the top of your profile (under 8 MB)."}</p>
+        <p className="text-muted-foreground">{current.banner_path ? "Banner is showing on your public profile." : "Wide photo shown across the top of your profile (recommended 1600 × 400 px, 4:1 aspect ratio, under 8 MB)."}</p>
         <Input className="mt-2" type="file" accept="image/*" disabled={busy} onChange={async (e) => {
           const file = e.target.files?.[0];
           if (!file) return;
