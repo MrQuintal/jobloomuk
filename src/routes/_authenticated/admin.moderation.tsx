@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/app/AppShell";
 import { RoleGate } from "@/components/app/RoleGate";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useAuth } from "@/lib/auth";
+import { canDeleteJobPosts } from "@/lib/rules/roles";
+import { DeleteJobPostButton } from "@/components/app/DeleteJobPostButton";
 
 export const Route = createFileRoute("/_authenticated/admin/moderation")({
   staticData: { sitemap: false },
@@ -18,6 +22,18 @@ export const Route = createFileRoute("/_authenticated/admin/moderation")({
 
 function Moderation() {
   const qc = useQueryClient();
+  const { roles } = useAuth();
+  const canDelete = canDeleteJobPosts(roles);
+  const [jobLimit, setJobLimit] = useState(100);
+  const jobs = useQuery({
+    queryKey: ["moderation-jobs", jobLimit],
+    enabled: canDelete,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("jobs").select("*").order("created_at", { ascending: false }).limit(jobLimit);
+      if (error) throw error;
+      return data;
+    },
+  });
   const q = useQuery({
     queryKey: ["moderation"],
     queryFn: async () => {
@@ -35,6 +51,25 @@ function Moderation() {
   return (
     <>
       <PageTitle title="Moderation">Reports, reviews and privacy requests in one place.</PageTitle>
+      {canDelete && <section className="mb-10">
+        <h2 className="text-xl font-medium">Job posts</h2>
+        {jobs.isLoading && <p className="mt-2 text-muted-foreground">Loading…</p>}
+        {jobs.isError && <p className="mt-2 text-destructive">Couldn't load job posts. <Button variant="ghost" size="sm" onClick={() => void jobs.refetch()}>Try again</Button></p>}
+        {jobs.data?.length === 0 && <p className="mt-2 text-muted-foreground">No job posts.</p>}
+        <ul className="mt-3 space-y-2">
+          {jobs.data?.map((job) => <li key={job.id} className="rounded-lg border border-border bg-card p-4 text-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 flex-1 break-words">
+                <h3 className="font-medium">{job.title}</h3>
+                <p className="text-xs text-muted-foreground">{job.area} · {job.status} · {new Date(job.created_at).toLocaleDateString("en-GB")}</p>
+              </div>
+              <DeleteJobPostButton jobId={job.id} title={job.title} />
+            </div>
+            <p className="mt-2 whitespace-pre-line break-words">{job.description}</p>
+          </li>)}
+        </ul>
+        {jobs.data && jobs.data.length >= jobLimit && <Button className="mt-3" variant="outline" onClick={() => setJobLimit((limit) => limit + 100)}>Show more posts</Button>}
+      </section>}
       {q.isLoading && <p className="text-muted-foreground">Loading…</p>}
       {q.data && (
         <div className="grid gap-10">

@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { canManageBusinessAccess, canManageRole, homeForRoles, isAdmin, SELF_SELECTABLE_ROLES } from "./roles";
+import { ALL_ROLES, canDeleteJobPosts, canManageBusinessAccess, canManageRole, homeForRoles, isAdmin, SELF_SELECTABLE_ROLES } from "./roles";
 
 describe("role rules", () => {
+  it("only super admins can delete job posts", () => {
+    expect(canDeleteJobPosts(["super_admin"])).toBe(true);
+    for (const role of ALL_ROLES.filter((role) => role !== "super_admin")) {
+      expect(canDeleteJobPosts([role])).toBe(false);
+    }
+    expect(canDeleteJobPosts([])).toBe(false);
+  });
   it("only super admins can manage Business upgrades", () => {
     expect(canManageBusinessAccess(["super_admin"])).toBe(true);
     for (const role of SELF_SELECTABLE_ROLES.concat(["moderator", "admin"])) {

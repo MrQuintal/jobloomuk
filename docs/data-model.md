@@ -15,6 +15,8 @@
 Storage buckets (private): `portfolio` (readable, owner writes into `<user_id>/…`), `documents` (owner + admin only).
 
 ## Planned
+Job post moderation: the protected `super_admin_delete_job` function permanently deletes any job post and records the actor, job ID, title, customer and optional reason in `audit_logs`. Existing conversations retain messages with their job reference cleared by the foreign key; job responses cascade.
+
 - **Phase 2**: worker_profiles, worker_services, worker_specialisms, portfolio_projects, portfolio_media, service_areas (centre point + radius).
 - **Phase 3**: jobs, job_requirements, job_media, job_status_history.
 - **Phase 4**: job_responses (interest), conversations, messages, availability_slots, booking_requests, introductions.

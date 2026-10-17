@@ -8,6 +8,7 @@
 | Build portfolio, respond to jobs (P2–3) | | | ✓ | | | |
 | Leave review after verified completion (P5) | | ✓ | ✓ | | | |
 | Moderate content & reports (P6) | | | | ✓ | ✓ | ✓ |
+| Delete any job post from Find jobs or Moderation | | | | | | ✓ |
 | View all users, audit log | | | | | ✓ | ✓ |
 | Grant customer/worker/moderator | | | | | ✓ | ✓ |
 | Grant/revoke admin roles | | | | | | ✓ |
@@ -15,6 +16,7 @@
 | Change categories, plans, flags, settings | | | | | ✓ | ✓ |
 
 Rules enforced in the database:
+- Only super admins can call `super_admin_delete_job`; deletion is atomic with an audit entry (title, customer and optional reason). Conversations/messages survive deletion; related job responses are deleted with the job.
 - Users choose customer or worker once (signup or `choose_initial_role`); they can never self-assign elevated roles.
 - Admins cannot remove their own admin role.
 - Only admins can change `account_status`.

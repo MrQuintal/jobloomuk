@@ -17,6 +17,7 @@ import { DistanceFilter } from "@/components/app/DistanceFilter";
 import { useGeocode, useGeocodeMany } from "@/lib/geocode";
 import { formatMiles, milesBetween, withinRadius } from "@/lib/rules/distance";
 import { listCategories } from "@/lib/public.functions";
+import { DeleteJobPostButton } from "@/components/app/DeleteJobPostButton";
 
 function PosterAvatar({ id }: { id: string }) {
   const av = useAvatars([id]);
@@ -157,6 +158,7 @@ function JobsPage({ uid }: { uid: string }) {
               <p className="text-sm text-muted-foreground">{[j.categories?.name, j.area, j.timing, j.budget_note].filter(Boolean).join(" · ")}</p>
               {milesTo(j.area) != null && <p className="mt-2"><span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">{formatMiles(milesTo(j.area)!)}</span></p>}
               <p className="mt-3 whitespace-pre-line text-sm">{j.description}</p>
+              <div className="mt-3"><DeleteJobPostButton jobId={j.id} title={j.title} /></div>
               {resp ? (
                 <ResponseState resp={resp} onChange={() => qc.invalidateQueries({ queryKey: ["open-jobs"] })} />
               ) : canRespondToJob({ status: j.status as JobStatus, customer_id: j.customer_id }, uid) ? (
