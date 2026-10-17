@@ -244,6 +244,27 @@ export type Database = {
           },
         ]
       }
+      favourite_customers: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          worker_id?: string
+        }
+        Relationships: []
+      }
       feature_flags: {
         Row: {
           description: string | null
@@ -934,6 +955,7 @@ export type Database = {
       }
       worker_profiles: {
         Row: {
+          availability_status: string | null
           banner_path: string | null
           base_area: string | null
           bio: string | null
@@ -950,6 +972,7 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          availability_status?: string | null
           banner_path?: string | null
           base_area?: string | null
           bio?: string | null
@@ -966,6 +989,7 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          availability_status?: string | null
           banner_path?: string | null
           base_area?: string | null
           bio?: string | null
@@ -1090,6 +1114,14 @@ export type Database = {
         Args: { _link: string; _title: string; _user: string }
         Returns: undefined
       }
+      my_favourite_customers: {
+        Args: Record<string, never>
+        Returns: {
+          created_at: string
+          customer_id: string
+          display_name: string
+        }[]
+      }
       plan_tier: { Args: { _u: string }; Returns: string }
       record_profile_event: {
         Args: { _kind: string; _worker: string }
@@ -1117,6 +1149,7 @@ export type Database = {
         Returns: undefined
       }
       tier_at_least: { Args: { _t: string; _u: string }; Returns: boolean }
+      worker_response_seconds: { Args: { _worker: string }; Returns: number }
       worker_reviews: {
         Args: { _worker: string }
         Returns: {

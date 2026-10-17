@@ -8,6 +8,7 @@ import { useState } from "react";
 import { DistanceFilter } from "@/components/app/DistanceFilter";
 import { useGeocode, useGeocodeMany } from "@/lib/geocode";
 import { formatMiles, milesBetween, withinRadius } from "@/lib/rules/distance";
+import { supabase } from "@/integrations/supabase/client";
 
 const catsQ = queryOptions({ queryKey: ["categories"], queryFn: () => listCategories() });
 const prosQ = (category?: string) => queryOptions({ queryKey: ["pros", category ?? ""], queryFn: () => listPros({ data: category ? { category } : {} }) });
@@ -55,7 +56,7 @@ function Pros() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {pros.map((p) => (
-              <Link key={p.user_id} to="/pro/$slug" params={{ slug: p.slug }} className="rounded-2xl border border-border bg-card p-6 transition-shadow hover:shadow-md">
+              <Link key={p.user_id} to="/pro/$slug" params={{ slug: p.slug }} className="rounded-2xl border border-border bg-card p-6 transition-shadow hover:shadow-md" onClick={() => { void supabase.rpc("record_profile_event", { _worker: p.user_id, _kind: "click" }).then(() => undefined); }}>
                 {p.sponsored && <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Sponsored</p>}
                 <h2 className="text-xl font-medium">{p.business_name}</h2>
                 {p.headline && <p className="mt-1 text-sm text-muted-foreground">{p.headline}</p>}

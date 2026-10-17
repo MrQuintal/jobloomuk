@@ -15,6 +15,8 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { WEEKDAYS, isValidSlot, slugify } from "@/lib/rules/marketplace";
+import { AVAILABILITY_LABEL, AVAILABILITY_STATUSES, tierAtLeast, type PlanTier } from "@/lib/rules/plans";
+import { useTier } from "./tools";
 
 export const Route = createFileRoute("/_authenticated/worker")({
   staticData: { sitemap: false },
@@ -34,6 +36,7 @@ const card = "rounded-2xl border border-border bg-card p-6";
 function WorkerPage() {
   const { user } = useAuth();
   const uid = user!.id;
+  const tier = useTier(uid).data ?? "free";
   const profileQ = useQuery({
     queryKey: ["my-worker-profile", uid],
     queryFn: async () => (await supabase.from("worker_profiles").select("*").eq("user_id", uid).maybeSingle()).data,
@@ -47,7 +50,7 @@ function WorkerPage() {
         <p className="mb-6 text-sm">Your profile is live: <Link to="/pro/$slug" params={{ slug: profile.slug }} className="underline">view public profile</Link></p>
       )}
       <div className="grid max-w-4xl gap-6">
-        <ProfileForm uid={uid} profile={profile ?? null} />
+        <ProfileForm uid={uid} profile={profile ?? null} tier={tier} />
         {profile ? (
           <>
             <Specialisms uid={uid} />
@@ -62,9 +65,9 @@ function WorkerPage() {
   );
 }
 
-type Profile = { slug: string; business_name: string; headline: string | null; bio: string | null; base_area: string | null; travel_radius_miles: number; years_experience: number | null; is_published: boolean; phone: string | null };
+type Profile = { slug: string; business_name: string; headline: string | null; bio: string | null; base_area: string | null; travel_radius_miles: number; years_experience: number | null; is_published: boolean; phone: string | null; availability_status: string | null };
 
-function ProfileForm({ uid, profile }: { uid: string; profile: Profile | null }) {
+function ProfileForm({ uid, profile, tier }: { uid: string; profile: Profile | null; tier: PlanTier }) {
   const qc = useQueryClient();
   const [f, setF] = useState({
     business_name: profile?.business_name ?? "",
@@ -114,6 +117,26 @@ function ProfileForm({ uid, profile }: { uid: string; profile: Profile | null })
         <div><Label>Travel radius (miles)</Label><Input type="number" min={1} max={200} value={f.travel_radius_miles} onChange={set("travel_radius_miles")} /></div>
         <div><Label>Years' experience</Label><Input type="number" min={0} max={70} value={f.years_experience} onChange={set("years_experience")} /></div>
         <label className="flex items-center gap-3 self-end pb-2 text-sm"><Switch checked={f.is_published} onCheckedChange={(v) => setF({ ...f, is_published: v })} /> Show my profile publicly</label>
+        <div className="md:col-span-2">
+          <Label>Availability</Label>
+          {!profile ? (
+            <p className="mt-1 text-sm text-muted-foreground">Save your profile first, then you can set whether you are available, busy or away.</p>
+          ) : tierAtLeast(tier, "pro") ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {AVAILABILITY_STATUSES.map((status) => (
+                <Button key={status} type="button" size="sm" variant={profile.availability_status === status ? "default" : "outline"} onClick={async () => {
+                  const { error } = await supabase.from("worker_profiles").update({ availability_status: status }).eq("user_id", uid);
+                  if (error) { toast.error(error.message); return; }
+                  toast.success("Availability updated");
+                  void qc.invalidateQueries({ queryKey: ["my-worker-profile"] });
+                }}>{AVAILABILITY_LABEL[status]}</Button>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-1 text-sm text-muted-foreground">Availability status is part of Pro. <Link to="/billing" search={{}} className="underline">See plans</Link></p>
+          )}
+          <p className="mt-2 text-xs text-muted-foreground">On Pro, your public profile also shows how quickly you usually reply, once you have answered at least three new enquiries in the last 90 days.</p>
+        </div>
       </div>
       <Button type="submit" variant="forest" className="mt-5" disabled={busy}>Save profile</Button>
     </form>

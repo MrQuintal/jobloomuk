@@ -14,6 +14,7 @@ import { useAuth } from "@/lib/auth";
 import { canRespondToJob, isValidMessage, type JobStatus } from "@/lib/rules/marketplace";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 import { JobPhotos } from "@/components/app/JobPhotos";
+import { FavouriteCustomerButton } from "@/components/app/FavouriteCustomer";
 import { DistanceFilter } from "@/components/app/DistanceFilter";
 import { useGeocode, useGeocodeMany } from "@/lib/geocode";
 import { formatMiles, milesBetween, withinRadius } from "@/lib/rules/distance";
@@ -172,6 +173,7 @@ function JobsPage({ uid }: { uid: string }) {
               {milesTo(j.area) != null && <p className="mt-2"><span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">{formatMiles(milesTo(j.area)!)}</span></p>}
               <p className="mt-3 whitespace-pre-line text-sm">{j.description}</p>
               <JobPhotos paths={j.image_paths} />
+              <div className="mt-3"><FavouriteCustomerButton workerId={uid} customerId={j.customer_id} tier={tier} /></div>
               <div className="mt-3"><DeleteJobPostButton jobId={j.id} title={j.title} /></div>
               {resp ? (
                 <ResponseState resp={resp} onChange={() => qc.invalidateQueries({ queryKey: ["open-jobs"] })} />

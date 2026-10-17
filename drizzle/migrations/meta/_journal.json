@@ -148,6 +148,13 @@
       "when": 1792293600000,
       "tag": "0020_job_photos_and_profile_visits",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792297200000,
+      "tag": "0021_favourites_status_clicks",
+      "breakpoints": true
     }
   ]
 }

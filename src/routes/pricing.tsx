@@ -50,7 +50,7 @@ function Pricing() {
           );
         })}
       </div>
-      <p className="mt-8 text-sm text-muted-foreground">Prices include VAT where applicable. Cancel any time — you keep paid features until the end of the period you paid for. Plan features are rolling out in stages.</p>
+      <p className="mt-8 text-sm text-muted-foreground">Prices include VAT where applicable. Cancel any time — you keep paid features until the end of the period you paid for.</p>
     </ContentPage>
   );
 }

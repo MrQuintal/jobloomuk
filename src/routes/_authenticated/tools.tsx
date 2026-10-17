@@ -73,6 +73,7 @@ function Tools() {
         </Section>
         <Section title="AI writing help" need="pro" tier={tier}><AiHelper /></Section>
         <Section title="Quote templates" need="pro" tier={tier}><Templates uid={uid} /></Section>
+        <Section title="Favourite customers" need="pro" tier={tier}><Favourites uid={uid} /></Section>
         <Section title="Lead pipeline" need="business" tier={tier}><Pipeline uid={uid} /></Section>
         <Section title="Team members" need="business" tier={tier}><Team uid={uid} /></Section>
         <Section title="Branches" need="business" tier={tier}><Branches uid={uid} /></Section>
@@ -89,14 +90,15 @@ function Analytics({ uid }: { uid: string }) {
       const since = new Date(Date.now() - 30 * 864e5).toISOString();
       const { data } = await supabase.from("profile_events").select("kind").eq("worker_id", uid).gte("created_at", since);
       const views = data?.filter((e) => e.kind === "view").length ?? 0;
+      const clicks = data?.filter((e) => e.kind === "click").length ?? 0;
       const enquiries = data?.filter((e) => e.kind === "enquiry").length ?? 0;
-      return { views, enquiries };
+      return { views, clicks, enquiries };
     },
   });
-  const d = q.data ?? { views: 0, enquiries: 0 };
+  const d = q.data ?? { views: 0, clicks: 0, enquiries: 0 };
   return (
-    <div className="grid grid-cols-3 gap-4 text-center">
-      {[["Profile views", d.views], ["Enquiries", d.enquiries], ["Conversion", `${conversionRate(d.views, d.enquiries)}%`]].map(([l, v]) => (
+    <div className="grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
+      {[["Profile views", d.views], ["Listing clicks", d.clicks], ["Enquiries", d.enquiries], ["Conversion", `${conversionRate(d.views, d.enquiries)}%`]].map(([l, v]) => (
         <div key={l} className="rounded-xl bg-secondary p-4"><p className="font-display text-3xl">{v}</p><p className="text-sm text-muted-foreground">{l}</p></div>
       ))}
     </div>
@@ -156,6 +158,30 @@ function Templates({ uid }: { uid: string }) {
       }}>Save template</Button>
       <p className="text-xs text-muted-foreground">Templates appear when you respond to a job.</p>
     </div>
+  );
+}
+
+function Favourites({ uid }: { uid: string }) {
+  const qc = useQueryClient();
+  const q = useQuery({
+    queryKey: ["favourite-customers", uid],
+    queryFn: async () => (await supabase.rpc("my_favourite_customers")).data ?? [],
+  });
+  if (!q.data?.length) return <p className="text-sm text-muted-foreground">Save a customer from Find jobs or from a conversation. They are listed here.</p>;
+  return (
+    <ul className="grid gap-2">
+      {q.data.map((customer) => (
+        <li key={customer.customer_id} className="flex items-center justify-between gap-3 rounded-xl bg-secondary p-3 text-sm">
+          <span>{customer.display_name}</span>
+          <Button size="sm" variant="ghost" onClick={async () => {
+            const { error } = await supabase.from("favourite_customers").delete().eq("worker_id", uid).eq("customer_id", customer.customer_id);
+            if (error) { toast.error(error.message); return; }
+            void qc.invalidateQueries({ queryKey: ["favourite-customers", uid] });
+            void qc.invalidateQueries({ queryKey: ["favourite-customer", uid, customer.customer_id] });
+          }}>Remove</Button>
+        </li>
+      ))}
+    </ul>
   );
 }
 

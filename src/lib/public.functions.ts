@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { fairOrder, summarise } from "@/lib/rules/reputation";
 import { withSponsored } from "@/lib/rules/media";
+import { responseTimeLabel } from "@/lib/rules/plans";
 
 function publicClient() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
@@ -44,17 +45,18 @@ export const getPro = createServerFn({ method: "GET" })
     const sb = publicClient();
     const { data: pro } = await sb
       .from("worker_profiles")
-      .select("user_id, slug, business_name, headline, bio, base_area, travel_radius_miles, years_experience, phone, banner_path, worker_specialisms(is_primary, categories(slug, name))")
+      .select("user_id, slug, business_name, headline, bio, base_area, travel_radius_miles, years_experience, phone, banner_path, availability_status, worker_specialisms(is_primary, categories(slug, name))")
       .eq("slug", data.slug)
       .eq("is_published", true)
       .maybeSingle();
     if (!pro) return null;
-    const [{ data: projects }, { data: slots }, { data: reviews }, { data: team }, { data: branches }] = await Promise.all([
+    const [{ data: projects }, { data: slots }, { data: reviews }, { data: team }, { data: branches }, { data: replySeconds }] = await Promise.all([
       sb.from("portfolio_projects").select("id, title, description, location_text, completed_on, image_paths, video_url").eq("worker_id", pro.user_id).order("completed_on", { ascending: false }),
       sb.from("availability_slots").select("weekday, start_time, end_time").eq("worker_id", pro.user_id).order("weekday"),
       sb.rpc("worker_reviews", { _worker: pro.user_id }),
       sb.from("team_members").select("id, name, role_title, bio").eq("business_id", pro.user_id).order("created_at"),
       sb.from("branches").select("id, name, area, phone").eq("business_id", pro.user_id).order("created_at"),
+      sb.rpc("worker_response_seconds", { _worker: pro.user_id }),
     ]);
     const paths = [...(projects ?? []).flatMap((p) => p.image_paths), ...(pro.banner_path ? [pro.banner_path] : [])];
     const urls: Record<string, string> = {};
@@ -71,5 +73,6 @@ export const getPro = createServerFn({ method: "GET" })
       team: team ?? [],
       reviews: reviews ?? [],
       summary: summarise(reviews ?? []),
+      responseLabel: responseTimeLabel(replySeconds),
     };
   });

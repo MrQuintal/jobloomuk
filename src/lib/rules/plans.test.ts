@@ -42,7 +42,7 @@ describe("plans", () => {
   });
 });
 
-import { canAddPortfolioProject, conversionRate } from "./plans";
+import { canAddPortfolioProject, conversionRate, responseTimeLabel } from "./plans";
 describe("plan feature limits", () => {
   it("free plan stops at 3 portfolio projects", () => {
     expect(canAddPortfolioProject("free", 2)).toBe(true);
@@ -55,5 +55,13 @@ describe("plan feature limits", () => {
   it("conversion is enquiries over views", () => {
     expect(conversionRate(200, 10)).toBe(5);
     expect(conversionRate(0, 3)).toBe(0);
+  });
+  it("describes a typical reply time", () => {
+    expect(responseTimeLabel(null)).toBeNull();
+    expect(responseTimeLabel(30 * 60)).toBe("Usually replies within an hour");
+    expect(responseTimeLabel(3 * 60 * 60)).toBe("Usually replies within a few hours");
+    expect(responseTimeLabel(20 * 60 * 60)).toBe("Usually replies within a day");
+    expect(responseTimeLabel(2 * 24 * 60 * 60)).toBe("Usually replies within a few days");
+    expect(responseTimeLabel(8 * 24 * 60 * 60)).toBe("Usually replies within a week");
   });
 });

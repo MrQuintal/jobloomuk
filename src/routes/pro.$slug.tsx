@@ -12,6 +12,7 @@ import { getPro } from "@/lib/public.functions";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { WEEKDAYS, isValidMessage } from "@/lib/rules/marketplace";
+import { availabilityLabel } from "@/lib/rules/plans";
 import { ReportButton } from "@/components/app/ReportButton";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 import { RatingBreakdown } from "@/components/app/StarRating";
@@ -53,10 +54,13 @@ function Pro() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(proQ(slug));
   const [photo, setPhoto] = useState<{ images: string[]; title: string; start: number } | null>(null);
-  if (!data) return null;
-  const { pro, projects, slots, reviews, summary, team, bannerUrl, branches } = data;
-  useEffect(() => { void supabase.rpc("record_profile_event", { _worker: pro.user_id, _kind: "view" }).then(() => undefined); }, [pro.user_id]);
-  const av = useAvatars([pro.user_id]);
+  const pro = data?.pro;
+  const workerId = pro?.user_id;
+  useEffect(() => { if (workerId) void supabase.rpc("record_profile_event", { _worker: workerId, _kind: "view" }).then(() => undefined); }, [workerId]);
+  const av = useAvatars(workerId ? [workerId] : []);
+  if (!data || !pro) return null;
+  const { projects, slots, reviews, summary, team, bannerUrl, branches, responseLabel } = data;
+  const statusLabel = availabilityLabel(pro.availability_status);
   return (
     <PageShell>
       <img src={bannerUrl ?? defaultBanner} alt={bannerUrl ? `${pro.business_name} banner` : "Jobloom banner"} className="h-48 w-full object-cover md:h-72" />
@@ -68,6 +72,12 @@ function Pro() {
             <h1 className="text-4xl font-medium md:text-5xl">{pro.business_name}</h1>
           </div>
           {pro.headline && <p className="mt-3 text-lg text-muted-foreground">{pro.headline}</p>}
+          {(statusLabel || responseLabel) && (
+            <p className="mt-3 flex flex-wrap gap-2 text-sm">
+              {statusLabel && <span className="rounded-full bg-secondary px-3 py-1">{statusLabel}</span>}
+              {responseLabel && <span className="rounded-full bg-secondary px-3 py-1">{responseLabel}</span>}
+            </p>
+          )}
           <div className="mt-4 flex flex-wrap gap-4 text-sm">
             {pro.phone && <span className="flex items-center gap-1"><Phone className="size-4" /> {pro.phone}</span>}
             {pro.base_area && <span className="flex items-center gap-1"><MapPin className="size-4" /> {pro.base_area}, travels up to {pro.travel_radius_miles} miles</span>}

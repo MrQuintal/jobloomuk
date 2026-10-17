@@ -13,6 +13,8 @@ import { isValidMessage, nextBookingStatuses, type BookingStatus } from "@/lib/r
 import { CompletionPanel } from "@/components/app/CompletionPanel";
 import { ReportButton } from "@/components/app/ReportButton";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
+import { FavouriteCustomerButton } from "@/components/app/FavouriteCustomer";
+import { useTier } from "./tools";
 
 export const Route = createFileRoute("/_authenticated/messages/$id")({
   staticData: { sitemap: false },
@@ -31,6 +33,7 @@ function Thread() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const uid = user!.id;
+  const tier = useTier(uid).data ?? "free";
   const qc = useQueryClient();
   const q = useQuery({
     queryKey: ["thread", id],
@@ -87,15 +90,6 @@ function Thread() {
   const archived = !!conv.archived_at;
   const other = conv.customer_id === uid ? names?.worker_name : names?.customer_name;
 
-  async function removeFromInbox() {
-    if (!window.confirm("Remove this conversation from your inbox? The messages and any review stay. It comes back if someone sends a new message.")) return;
-    const { error } = await supabase.rpc("hide_conversation_from_inbox", { _conv: id });
-    if (error) { toast.error(error.message); return; }
-    toast.success("Removed from your inbox");
-    void qc.invalidateQueries({ queryKey: ["inbox"] });
-    navigate({ to: "/messages" });
-  }
-
   async function startNewJob() {
     const { data, error } = await supabase.rpc("start_new_job", { _conv: id });
     if (error || !data) { toast.error(error?.message ?? "Could not start a new job"); return; }
@@ -145,9 +139,9 @@ function Thread() {
               </>
             )}
           </div>
+          {conv.worker_id === uid && <div className="mt-3"><FavouriteCustomerButton workerId={uid} customerId={conv.customer_id} tier={tier} /></div>}
           <p className="text-sm text-muted-foreground">{archived ? "Finished job" : jobSummary.data?.title ?? names?.job_title ?? "Direct enquiry"}</p>
           {jobSummary.data?.description && <p className="mt-2 whitespace-pre-line text-sm">{jobSummary.data.description}</p>}
-          <Button type="button" variant="ghost" size="sm" className="mt-2 -ml-3" onClick={() => void removeFromInbox()}>Remove from inbox</Button>
         </header>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {msgs.map((m) => (

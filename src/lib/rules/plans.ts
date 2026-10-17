@@ -56,44 +56,55 @@ export const PLAN_FEATURES: Record<"pro" | "business", { tagline: string; featur
     tagline: "For people who want to win more work",
     features: [
       "Everything in Free",
-      "Enhanced profile with banner, branding and shareable link",
-      "Unlimited portfolio projects with photos, videos, case studies and before-and-after galleries",
-      "More service categories and specialisms",
-      "Advanced job filters by location, distance, budget, category and urgency",
-      "Instant alerts for matching jobs",
-      "Saved job searches and favourite customers",
-      "Enhanced availability calendar and service-area map",
-      "Quote templates and indicative pricing tools",
-      "Profile analytics: views, enquiries, clicks and conversion",
-      "Custom profile URL and downloadable profile PDF",
-      "AI-assisted profile descriptions, quotes and replies",
-      "Business hours, response-time and availability status",
-      "Lead and enquiry dashboard",
-      "Optional promoted placement, clearly labelled as sponsored",
+      "Profile banner",
+      "Unlimited portfolio projects, with photos, a description and a YouTube or Vimeo video",
+      "Keyword and area filters on Find jobs",
+      "Saved searches and instant alerts for matching jobs",
+      "Favourite customers",
+      "Quote templates",
+      "Profile analytics: views, clicks, enquiries and conversion",
+      "AI help for your profile, quotes and replies",
+      "A response time and an availability status on your profile",
+      "Sponsored placement, labelled Sponsored",
     ],
   },
   business: {
     tagline: "For growing businesses and professional teams",
     features: [
       "Everything in Pro",
-      "Dedicated business page with logo, branding and gallery",
-      "Multiple team-member profiles under one business",
-      "Team roles and permissions (owner, manager)",
-      "Multiple branches, service areas or locations",
-      "Shared team availability and appointment calendar",
-      "Central enquiries inbox for the whole business",
+      "Team members listed on your profile",
+      "Branches listed on your profile",
       "Assign leads to team members",
-      "Company-wide and per-profile analytics",
-      "Manage multiple categories, brands or profiles",
-      "Customisable service packages and quote templates",
-      "Business credentials and document management",
-      "Lead pipeline: new, contacted, quoted, completed",
-      "Downloadable business reports",
-      "Custom business URL and portfolio presentation",
-      "Priority support",
+      "Upcoming visits for your team",
+      "Lead pipeline: new, contacted, quoted, booked, completed and lost",
+      "Download a CSV of your leads",
     ],
   },
 };
+
+export const AVAILABILITY_STATUSES = ["available", "busy", "away"] as const;
+export type AvailabilityStatus = (typeof AVAILABILITY_STATUSES)[number];
+
+export const AVAILABILITY_LABEL: Record<AvailabilityStatus, string> = {
+  available: "Available",
+  busy: "Busy",
+  away: "Away",
+};
+
+export function availabilityLabel(status: string | null | undefined): string | null {
+  if (status === "available" || status === "busy" || status === "away") return AVAILABILITY_LABEL[status];
+  return null;
+}
+
+/** Label for a median reply time in seconds. Needs a real measurement; callers hide it until there are enough replies. */
+export function responseTimeLabel(medianSeconds: number | null | undefined): string | null {
+  if (medianSeconds == null || !Number.isFinite(medianSeconds) || medianSeconds < 0) return null;
+  if (medianSeconds <= 60 * 60) return "Usually replies within an hour";
+  if (medianSeconds <= 4 * 60 * 60) return "Usually replies within a few hours";
+  if (medianSeconds <= 24 * 60 * 60) return "Usually replies within a day";
+  if (medianSeconds <= 3 * 24 * 60 * 60) return "Usually replies within a few days";
+  return "Usually replies within a week";
+}
 
 /** Free professionals can show this many portfolio projects; Pro and Business are unlimited. Mirrors the DB trigger. */
 export const FREE_PORTFOLIO_LIMIT = 3;
