@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 # Architecture rules
+- Job post removal uses a shared confirmation control and an atomic super-admin-only database function with an audit entry; existing conversation foreign keys preserve messages when a post is deleted.
 - Product docs live in `docs/` (requirements register, data model, roles matrix); update them when a phase changes scope — they are the owner's source of truth.
 - Roles live only in `public.user_roles`; elevated changes go through security-definer DB functions (`admin_set_role`) — prevents privilege escalation.
 - Pure business rules live in `src/lib/rules/` with unit tests and must mirror DB enforcement — UI and DB stay consistent.

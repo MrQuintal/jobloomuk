@@ -99,6 +99,13 @@
       "when": 1792194098507,
       "tag": "0013_anyone_express_interest",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792198651400,
+      "tag": "0014_super_admin_delete_job",
+      "breakpoints": true
     }
   ]
 }

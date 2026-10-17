@@ -1080,6 +1080,10 @@ export type Database = {
         Args: { _bucket: string; _name: string }
         Returns: boolean
       }
+      super_admin_delete_job: {
+        Args: { _job_id: string; _reason?: string }
+        Returns: undefined
+      }
       tier_at_least: { Args: { _t: string; _u: string }; Returns: boolean }
       worker_reviews: {
         Args: { _worker: string }
