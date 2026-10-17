@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { template as invoiceTemplate } from './invoice'
 import { template as jobMatchTemplate } from './job-match'
 
 export interface TemplateEntry {
@@ -19,5 +20,6 @@ export interface TemplateEntry {
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
+  'invoice': invoiceTemplate,
   'job-match': jobMatchTemplate,
 }

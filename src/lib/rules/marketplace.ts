@@ -15,6 +15,18 @@ export function slugify(name: string): string {
     .slice(0, 60);
 }
 
+/** Endings that would clash with a site page. Kept in step with guard_profile_slug(). */
+export const RESERVED_PROFILE_SLUGS = ["about", "account", "admin", "alerts", "api", "auth", "billing", "contact", "customer", "dashboard", "invoices", "jobs", "messages", "notifications", "onboarding", "pricing", "privacy", "pro", "professionals", "terms", "tools", "worker"] as const;
+
+/** A chosen profile address: 3 to 40 letters, numbers and hyphens. */
+export function profileSlug(raw: string): string | null {
+  let cleaned = raw.trim().toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  if (cleaned.length > 40) cleaned = cleaned.slice(0, 40).replace(/-+$/g, "");
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(cleaned) || cleaned.length < 3) return null;
+  if ((RESERVED_PROFILE_SLUGS as readonly string[]).includes(cleaned)) return null;
+  return cleaned;
+}
+
 /** Mirrors the job_responses INSERT policy. */
 export function canRespondToJob(job: { status: JobStatus; customer_id: string }, workerId: string): boolean {
   return job.status === "open" && job.customer_id !== workerId;

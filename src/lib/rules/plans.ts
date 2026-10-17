@@ -75,9 +75,10 @@ export const PLAN_FEATURES: Record<"pro" | "business", { tagline: string; featur
       "Team members listed on your profile",
       "Branches listed on your profile",
       "Assign leads to team members",
-      "Upcoming visits for your team",
+      "A month calendar of visits. Agreed dates are highlighted, and you record the amount for each job",
       "Lead pipeline: new, contacted, quoted, booked, completed and lost",
       "Download a CSV of your leads",
+      "Invoices you create and save as a PDF. Customers pay you directly",
     ],
   },
 };

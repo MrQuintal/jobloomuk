@@ -43,10 +43,14 @@ export const getPro = createServerFn({ method: "GET" })
   .inputValidator((input: { slug: string }) => input)
   .handler(async ({ data }) => {
     const sb = publicClient();
+    const wanted = data.slug.trim().toLowerCase();
+    const { data: resolved } = await sb.rpc("current_profile_slug", { _slug: wanted });
+    if (!resolved) return null;
+    if (resolved !== data.slug) return { kind: "redirect" as const, redirectSlug: resolved };
     const { data: pro } = await sb
       .from("worker_profiles")
       .select("user_id, slug, business_name, headline, bio, base_area, travel_radius_miles, years_experience, phone, banner_path, availability_status, worker_specialisms(is_primary, categories(slug, name))")
-      .eq("slug", data.slug)
+      .eq("slug", resolved)
       .eq("is_published", true)
       .maybeSingle();
     if (!pro) return null;
@@ -65,6 +69,7 @@ export const getPro = createServerFn({ method: "GET" })
       for (const s of signed ?? []) if (s.path && s.signedUrl) urls[s.path] = s.signedUrl;
     }
     return {
+      kind: "profile" as const,
       pro,
       bannerUrl: pro.banner_path ? urls[pro.banner_path] ?? null : null,
       branches: branches ?? [],

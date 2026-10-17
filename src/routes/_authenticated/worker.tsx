@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { WEEKDAYS, isValidSlot, slugify } from "@/lib/rules/marketplace";
+import { RESERVED_PROFILE_SLUGS, WEEKDAYS, isValidSlot, profileSlug, slugify } from "@/lib/rules/marketplace";
 import { AVAILABILITY_LABEL, AVAILABILITY_STATUSES, tierAtLeast, type PlanTier } from "@/lib/rules/plans";
 import { useTier } from "./tools";
 
@@ -50,7 +50,7 @@ function WorkerPage() {
         <p className="mb-6 text-sm">Your profile is live: <Link to="/pro/$slug" params={{ slug: profile.slug }} className="underline">view public profile</Link></p>
       )}
       <div className="grid max-w-4xl gap-6">
-        <ProfileForm uid={uid} profile={profile ?? null} tier={tier} />
+        <ProfileForm key={profile?.slug ?? "new"} uid={uid} profile={profile ?? null} tier={tier} />
         {profile ? (
           <>
             <Specialisms uid={uid} />
@@ -77,6 +77,7 @@ function ProfileForm({ uid, profile, tier }: { uid: string; profile: Profile | n
     travel_radius_miles: profile?.travel_radius_miles ?? 15,
     years_experience: profile?.years_experience ?? "",
     phone: profile?.phone ?? "",
+    slug: profile?.slug ?? "",
     is_published: profile?.is_published ?? false,
   });
   const [busy, setBusy] = useState(false);
@@ -85,6 +86,12 @@ function ProfileForm({ uid, profile, tier }: { uid: string; profile: Profile | n
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (f.business_name.trim().length < 2) { toast.error("Add your business name"); return; }
+    const chosen = f.slug.trim() ? profileSlug(f.slug) : null;
+    if (f.slug.trim() && !chosen) {
+      const cleaned = f.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      toast.error((RESERVED_PROFILE_SLUGS as readonly string[]).includes(cleaned) ? "That address is reserved" : "Use 3 to 40 letters, numbers and hyphens");
+      return;
+    }
     setBusy(true);
     const row = {
       user_id: uid,
@@ -96,11 +103,11 @@ function ProfileForm({ uid, profile, tier }: { uid: string; profile: Profile | n
       years_experience: f.years_experience === "" ? null : Number(f.years_experience),
       phone: f.phone.trim() || null,
       is_published: f.is_published,
-      slug: profile?.slug ?? `${slugify(f.business_name)}-${uid.slice(0, 6)}`,
+      slug: chosen ?? profile?.slug ?? `${slugify(f.business_name)}-${uid.slice(0, 6)}`,
     };
     const { error } = await supabase.from("worker_profiles").upsert(row);
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(/already used|duplicate key|unique/i.test(error.message) ? "That address is already used" : error.message); return; }
     toast.success("Profile saved");
     qc.invalidateQueries({ queryKey: ["my-worker-profile"] });
   }
@@ -110,6 +117,14 @@ function ProfileForm({ uid, profile, tier }: { uid: string; profile: Profile | n
       <h2 className="text-xl font-medium">Profile</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div className="md:col-span-2"><Label>Business name</Label><Input value={f.business_name} onChange={set("business_name")} maxLength={80} /></div>
+        <div className="md:col-span-2">
+          <Label htmlFor="profile-slug">Profile address</Label>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="shrink-0 text-sm text-muted-foreground">jobloom.co.uk/pro/</span>
+            <Input id="profile-slug" value={f.slug} onChange={set("slug")} maxLength={40} placeholder="your-name" autoCapitalize="none" spellCheck={false} />
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Letters, numbers and hyphens. Leave it blank the first time and the address comes from your business name. After you change it, the previous address still opens this page.</p>
+        </div>
         <div className="md:col-span-2"><Label>Headline</Label><Input value={f.headline} onChange={set("headline")} maxLength={140} placeholder="e.g. Kitchen and bathroom fitter in Leeds" /></div>
         <div className="md:col-span-2"><Label>About your work</Label><Textarea rows={5} value={f.bio} onChange={set("bio")} maxLength={3000} /></div>
         <div><Label>Phone number</Label><Input type="tel" value={f.phone} onChange={set("phone")} maxLength={20} placeholder="e.g. 07700 900123" /></div>

@@ -12,9 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { aiWrite } from "@/lib/ai.functions";
-import { conversionRate, LEAD_STAGES, tierAtLeast, type PlanTier } from "@/lib/rules/plans";
+import { conversionRate, formatPence, LEAD_STAGES, tierAtLeast, type PlanTier } from "@/lib/rules/plans";
+import { invoiceAmountPence, invoiceNumberLabel } from "@/lib/rules/invoice";
 import defaultBanner from "@/assets/default-profile-banner.png";
 import { BannerCropper } from "@/components/app/BannerCropper";
+import { BusinessCalendar } from "@/components/app/BusinessCalendar";
 
 export const Route = createFileRoute("/_authenticated/tools")({
   staticData: { sitemap: false },
@@ -77,7 +79,8 @@ function Tools() {
         <Section title="Lead pipeline" need="business" tier={tier}><Pipeline uid={uid} /></Section>
         <Section title="Team members" need="business" tier={tier}><Team uid={uid} /></Section>
         <Section title="Branches" need="business" tier={tier}><Branches uid={uid} /></Section>
-        <Section title="Team calendar" need="business" tier={tier}><Calendar uid={uid} /></Section>
+        <Section title="Calendar" need="business" tier={tier}><BusinessCalendar uid={uid} /></Section>
+        <Section title="Invoices" need="business" tier={tier}><Invoices uid={uid} /></Section>
       </div>
     </>
   );
@@ -355,37 +358,60 @@ function Branches({ uid }: { uid: string }) {
   );
 }
 
-function Calendar({ uid }: { uid: string }) {
+function Invoices({ uid }: { uid: string }) {
+  const qc = useQueryClient();
   const q = useQuery({
-    queryKey: ["team-calendar", uid],
-    queryFn: async () => {
-      const { data: convs } = await supabase.from("conversations").select("id, jobs(title)").eq("worker_id", uid);
-      const ids = (convs ?? []).map((c) => c.id);
-      if (!ids.length) return { rows: [], convs: [], stages: [], team: [] };
-      const [{ data: rows }, { data: stages }, { data: team }] = await Promise.all([
-        supabase.from("booking_requests").select("id, conversation_id, starts_at, status").in("conversation_id", ids).in("status", ["pending", "accepted"]).gte("starts_at", new Date().toISOString()).order("starts_at"),
-        supabase.from("lead_stages").select("conversation_id, assignee_id").eq("worker_id", uid),
-        supabase.from("team_members").select("id, name").eq("business_id", uid),
-      ]);
-      return { rows: rows ?? [], convs: convs ?? [], stages: stages ?? [], team: team ?? [] };
-    },
+    queryKey: ["invoices", uid],
+    queryFn: async () => (await supabase.from("invoices").select("id, number, customer_name, amount_pence, issued_on").eq("worker_id", uid).order("number", { ascending: false })).data ?? [],
   });
-  if (!q.data) return null;
-  const { rows, convs, stages, team } = q.data;
-  if (!rows.length) return <p className="text-sm text-muted-foreground">No upcoming visits. Requested and accepted visits from your messages appear here, with whoever the lead is assigned to.</p>;
+  const [f, setF] = useState({ customer_name: "", customer_email: "", description: "", amount: "" });
+  const [busy, setBusy] = useState(false);
   return (
-    <ul className="grid gap-2 text-sm">
-      {rows.map((r) => {
-        const who = team.find((m) => m.id === stages.find((s) => s.conversation_id === r.conversation_id)?.assignee_id)?.name;
-        return (
-          <li key={r.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3">
-            <span className="font-medium">{new Date(r.starts_at).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
-            <Link to="/messages/$id" params={{ id: r.conversation_id }} className="flex-1 underline">{convs.find((c) => c.id === r.conversation_id)?.jobs?.title ?? "Direct enquiry"}</Link>
-            <span className="text-muted-foreground">{who ?? "Unassigned"}</span>
-            <span className="rounded-full bg-secondary px-2 py-0.5 text-xs capitalize">{r.status}</span>
+    <div className="grid gap-4">
+      <p className="text-sm text-muted-foreground">Write the invoice, then save it as a PDF or email it. The customer pays you directly. Jobloom does not collect the money.</p>
+      <form className="grid gap-2" onSubmit={async (e) => {
+        e.preventDefault();
+        const amount_pence = invoiceAmountPence(f.amount);
+        if (!amount_pence) { toast.error("Enter an amount in pounds, such as 150 or 150.50"); return; }
+        const email = f.customer_email.trim();
+        if (email && !email.includes("@")) { toast.error("Enter a valid customer email, or leave it blank"); return; }
+        setBusy(true);
+        const { error } = await supabase.from("invoices").insert({
+          worker_id: uid,
+          customer_name: f.customer_name.trim(),
+          customer_email: email || null,
+          description: f.description.trim(),
+          amount_pence,
+        });
+        setBusy(false);
+        if (error) { toast.error(error.message); return; }
+        setF({ customer_name: "", customer_email: "", description: "", amount: "" });
+        toast.success("Invoice created");
+        void qc.invalidateQueries({ queryKey: ["invoices", uid] });
+      }}>
+        <Input placeholder="Customer name" value={f.customer_name} onChange={(e) => setF({ ...f, customer_name: e.target.value })} maxLength={120} required />
+        <Input type="email" placeholder="Customer email (optional, needed to send it)" value={f.customer_email} onChange={(e) => setF({ ...f, customer_email: e.target.value })} maxLength={200} />
+        <Textarea rows={3} placeholder="What the work was" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} maxLength={4000} required />
+        <Input inputMode="decimal" placeholder="Amount in pounds, e.g. 150" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} required />
+        <Button type="submit" className="w-fit" disabled={busy}>{busy ? "Creating…" : "Create invoice"}</Button>
+      </form>
+      <ul className="grid gap-2">
+        {(q.data ?? []).map((invoice) => (
+          <li key={invoice.id} className="flex flex-wrap items-center gap-3 rounded-xl bg-secondary p-3 text-sm">
+            <span className="font-medium">{invoiceNumberLabel(invoice.number)}</span>
+            <span className="flex-1">{invoice.customer_name}</span>
+            <span>{formatPence(invoice.amount_pence)}</span>
+            <Link to="/invoices/$id" params={{ id: invoice.id }} className="underline">Open</Link>
+            <Button size="icon" variant="ghost" aria-label="Delete invoice" onClick={async () => {
+              if (!window.confirm("Delete this invoice?")) return;
+              const { error } = await supabase.from("invoices").delete().eq("id", invoice.id);
+              if (error) { toast.error(error.message); return; }
+              void qc.invalidateQueries({ queryKey: ["invoices", uid] });
+            }}><Trash2 /></Button>
           </li>
-        );
-      })}
-    </ul>
+        ))}
+      </ul>
+    </div>
   );
 }
+

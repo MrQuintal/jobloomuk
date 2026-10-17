@@ -70,6 +70,7 @@ export type Database = {
       }
       booking_requests: {
         Row: {
+          amount_pence: number | null
           conversation_id: string
           created_at: string
           id: string
@@ -79,6 +80,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          amount_pence?: number | null
           conversation_id: string
           created_at?: string
           id?: string
@@ -88,6 +90,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          amount_pence?: number | null
           conversation_id?: string
           created_at?: string
           id?: string
@@ -283,6 +286,51 @@ export type Database = {
           enabled?: boolean
           key?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount_pence: number
+          business_area: string | null
+          business_name: string
+          business_phone: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          description: string
+          id: string
+          issued_on: string
+          number: number
+          worker_id: string
+        }
+        Insert: {
+          amount_pence: number
+          business_area?: string | null
+          business_name?: string
+          business_phone?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          description: string
+          id?: string
+          issued_on?: string
+          number?: number
+          worker_id: string
+        }
+        Update: {
+          amount_pence?: number
+          business_area?: string | null
+          business_name?: string
+          business_phone?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          description?: string
+          id?: string
+          issued_on?: string
+          number?: number
+          worker_id?: string
         }
         Relationships: []
       }
@@ -1074,6 +1122,7 @@ export type Database = {
         Returns: undefined
       }
       confirm_completion: { Args: { _conv: string }; Returns: undefined }
+      current_profile_slug: { Args: { _slug: string }; Returns: string }
       conversation_job_summary: {
         Args: { _conv: string }
         Returns: {

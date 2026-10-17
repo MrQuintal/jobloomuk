@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Download, MapPin, Phone } from "lucide-react";
@@ -26,6 +26,7 @@ export const Route = createFileRoute("/pro/$slug")({
   loader: async ({ context, params }) => {
     const d = await context.queryClient.ensureQueryData(proQ(params.slug));
     if (!d) throw notFound();
+    if (d.kind === "redirect") throw redirect({ to: "/pro/$slug", params: { slug: d.redirectSlug } });
     return { name: d.pro.business_name, headline: d.pro.headline };
   },
   head: ({ loaderData, params }) => {
@@ -54,11 +55,11 @@ function Pro() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(proQ(slug));
   const [photo, setPhoto] = useState<{ images: string[]; title: string; start: number } | null>(null);
-  const pro = data?.pro;
+  const pro = data?.kind === "profile" ? data.pro : undefined;
   const workerId = pro?.user_id;
   useEffect(() => { if (workerId) void supabase.rpc("record_profile_event", { _worker: workerId, _kind: "view" }).then(() => undefined); }, [workerId]);
   const av = useAvatars(workerId ? [workerId] : []);
-  if (!data || !pro) return null;
+  if (!data || data.kind !== "profile" || !pro) return null;
   const { projects, slots, reviews, summary, team, bannerUrl, branches, responseLabel } = data;
   const statusLabel = availabilityLabel(pro.availability_status);
   return (

@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { alertKeyword, canRespondToJob, hiddenFromInbox, isValidMessage, isValidSlot, nextBookingStatuses, slugify } from "./marketplace";
+import { alertKeyword, canRespondToJob, hiddenFromInbox, isValidMessage, isValidSlot, nextBookingStatuses, profileSlug, slugify } from "./marketplace";
 
 describe("marketplace rules", () => {
   it("slugifies business names", () => {
     expect(slugify("Smith & Sons Plumbing Ltd.")).toBe("smith-sons-plumbing-ltd");
+  });
+  it("accepts a custom profile address and refuses reserved or short ones", () => {
+    expect(profileSlug(" Bunny Flop ")).toBe("bunny-flop");
+    expect(profileSlug("jobs")).toBeNull();
+    expect(profileSlug("ab")).toBeNull();
   });
   it("workers can only respond to open jobs that aren't their own", () => {
     expect(canRespondToJob({ status: "open", customer_id: "c" }, "w")).toBe(true);

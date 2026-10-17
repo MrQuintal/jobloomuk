@@ -45,8 +45,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   ].filter(Boolean) as { to: "/customer" | "/worker" | "/alerts" | "/tools" | "/billing" | "/messages" | "/notifications" | "/account" | "/admin/settings" | "/admin/moderation" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard; badge?: number }[];
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
-      <aside className="flex flex-col gap-6 bg-sidebar p-5 text-sidebar-foreground md:min-h-screen">
+    <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr] print:block">
+      <aside className="flex flex-col gap-6 bg-sidebar p-5 text-sidebar-foreground md:min-h-screen print:hidden">
         <Logo inverted />
         <nav className="flex gap-1 overflow-x-auto md:flex-col">
           {links.map((l) => (
@@ -86,7 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Button>
         </div>
       </aside>
-      <main className="p-5 md:p-10">{children}</main>
+      <main className="p-5 md:p-10 print:p-0">{children}</main>
     </div>
   );
 }

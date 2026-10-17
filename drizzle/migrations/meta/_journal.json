@@ -155,6 +155,27 @@
       "when": 1792297200000,
       "tag": "0021_favourites_status_clicks",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792300800000,
+      "tag": "0022_business_invoices",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792304400000,
+      "tag": "0023_booking_amounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792308000000,
+      "tag": "0024_custom_profile_slug",
+      "breakpoints": true
     }
   ]
 }
