@@ -76,6 +76,15 @@ function Thread() {
   const archived = !!conv.archived_at;
   const other = conv.customer_id === uid ? names?.worker_name : names?.customer_name;
 
+  async function removeFromInbox() {
+    if (!window.confirm("Remove this conversation from your inbox? The messages and any review stay. It comes back if someone sends a new message.")) return;
+    const { error } = await supabase.rpc("hide_conversation_from_inbox", { _conv: id });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Removed from your inbox");
+    void qc.invalidateQueries({ queryKey: ["inbox"] });
+    navigate({ to: "/messages" });
+  }
+
   async function startNewJob() {
     const { data, error } = await supabase.rpc("start_new_job", { _conv: id });
     if (error || !data) { toast.error(error?.message ?? "Could not start a new job"); return; }
@@ -117,6 +126,7 @@ function Thread() {
             <h1 className="text-xl font-medium">{other || "Jobloom member"}</h1>
           </div>
           <p className="text-sm text-muted-foreground">{archived ? "Finished job" : names?.job_title ?? "Direct enquiry"}</p>
+          <Button type="button" variant="ghost" size="sm" className="mt-2 -ml-3" onClick={() => void removeFromInbox()}>Remove from inbox</Button>
         </header>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {msgs.map((m) => (

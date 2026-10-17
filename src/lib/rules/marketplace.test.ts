@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRespondToJob, isValidMessage, isValidSlot, nextBookingStatuses, slugify } from "./marketplace";
+import { canRespondToJob, hiddenFromInbox, isValidMessage, isValidSlot, nextBookingStatuses, slugify } from "./marketplace";
 
 describe("marketplace rules", () => {
   it("slugifies business names", () => {
@@ -14,6 +14,11 @@ describe("marketplace rules", () => {
     expect(nextBookingStatuses("requested", false)).toEqual(["accepted", "declined"]);
     expect(nextBookingStatuses("requested", true)).toEqual(["cancelled"]);
     expect(nextBookingStatuses("accepted", false)).toEqual([]);
+  });
+  it("hides a conversation only for the person who removed it", () => {
+    const c = { customer_id: "c", worker_id: "w", customer_hidden_at: "2026-10-17T12:00:00Z", worker_hidden_at: null };
+    expect(hiddenFromInbox(c, "c")).toBe(true);
+    expect(hiddenFromInbox(c, "w")).toBe(false);
   });
   it("messages must be 1 to 4000 characters", () => {
     expect(isValidMessage("  ")).toBe(false);

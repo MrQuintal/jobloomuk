@@ -204,28 +204,34 @@ export type Database = {
         Row: {
           archived_at: string | null
           created_at: string
+          customer_hidden_at: string | null
           customer_id: string
           id: string
           job_id: string | null
           last_message_at: string
+          worker_hidden_at: string | null
           worker_id: string
         }
         Insert: {
           archived_at?: string | null
           created_at?: string
+          customer_hidden_at?: string | null
           customer_id: string
           id?: string
           job_id?: string | null
           last_message_at?: string
+          worker_hidden_at?: string | null
           worker_id: string
         }
         Update: {
           archived_at?: string | null
           created_at?: string
+          customer_hidden_at?: string | null
           customer_id?: string
           id?: string
           job_id?: string | null
           last_message_at?: string
+          worker_hidden_at?: string | null
           worker_id?: string
         }
         Relationships: [
@@ -1082,6 +1088,7 @@ export type Database = {
           id: string
         }[]
       }
+      hide_conversation_from_inbox: { Args: { _conv: string }; Returns: undefined }
       start_new_job: { Args: { _conv: string }; Returns: string }
       start_conversation_with_worker: {
         Args: { _body: string; _worker_id: string }

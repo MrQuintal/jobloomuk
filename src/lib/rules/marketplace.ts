@@ -26,6 +26,13 @@ export function nextBookingStatuses(status: BookingStatus, isRequester: boolean)
   return isRequester ? ["cancelled"] : ["accepted", "declined"];
 }
 
+/** True when this person has removed the conversation from their own inbox. */
+export function hiddenFromInbox(c: { customer_id: string; worker_id: string; customer_hidden_at: string | null; worker_hidden_at: string | null }, userId: string): boolean {
+  if (c.customer_id === userId) return c.customer_hidden_at != null;
+  if (c.worker_id === userId) return c.worker_hidden_at != null;
+  return false;
+}
+
 /** Mirrors messages body CHECK (1..4000 chars). */
 export function isValidMessage(body: string): boolean {
   const t = body.trim();

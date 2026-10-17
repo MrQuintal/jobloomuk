@@ -127,6 +127,13 @@
       "when": 1792275600000,
       "tag": "0017_archive_finished_job",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792282800000,
+      "tag": "0018_hide_conversation_from_inbox",
+      "breakpoints": true
     }
   ]
 }
