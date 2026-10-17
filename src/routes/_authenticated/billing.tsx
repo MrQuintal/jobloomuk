@@ -49,14 +49,15 @@ function Billing() {
     enabled: !!user,
     refetchInterval: 15000,
     queryFn: async () => {
-      if (!user) return false;
-      const { data, error } = await supabase.from("business_access_grants").select("user_id").eq("user_id", user.id).maybeSingle();
+      if (!user) return null;
+      const { data, error } = await supabase.from("business_access_grants").select("tier").eq("user_id", user.id).maybeSingle();
       if (error) throw error;
-      return !!data;
+      return (data?.tier as "pro" | "business" | undefined) ?? null;
     },
   });
   const tier = currentTier(sub.data);
-  const accessTier = effectiveTier(sub.data, grant.data === true);
+  const accessTier = effectiveTier(sub.data, grant.data ?? null);
+  const isComplimentary = !!grant.data && accessTier === grant.data && tier !== accessTier;
   const [switching, setSwitching] = useState<string | null>(null);
   const [polling, setPolling] = useState(false);
 
@@ -90,13 +91,20 @@ function Billing() {
     <div>
       <PaymentTestModeBanner />
       <PageTitle title="Plan & billing" />
-      {grant.data && <p className="mb-4 text-sm text-foreground"><strong className="capitalize">{accessTier} access</strong> — complimentary upgrade granted by Jobloom. Your paid subscription and any existing charges are unchanged.</p>}
-      <p className="mb-6 text-muted-foreground">
-        You're on <strong className="text-foreground capitalize">{tier}</strong>
-        {tier !== "free" && currentPrice && ` (${currentPrice.endsWith("yearly") ? "annual" : "monthly"})`}.
-        {sub.data?.cancel_at_period_end && sub.data.current_period_end && ` Cancelled — paid features end on ${new Date(sub.data.current_period_end).toLocaleDateString("en-GB")}.`}
-        {sub.data?.status === "past_due" && " Your last payment failed — please update your card."}
-      </p>
+      {isComplimentary ? (
+        <div className="mb-6 rounded-2xl border border-bloom bg-card p-5">
+          <p className="text-lg">You're on <strong className="capitalize">{accessTier}</strong> <span className="ml-1 rounded-full bg-bloom px-3 py-1 text-xs text-bloom-foreground">Complimentary · Free</span></p>
+          <p className="mt-2 text-sm text-muted-foreground">Jobloom has upgraded your account for free. You won't be charged for this plan.{tier !== "free" && ` Your paid ${tier} subscription and its charges are unchanged.`}</p>
+        </div>
+      ) : (
+        <p className="mb-6 text-muted-foreground">
+          You're on <strong className="text-foreground capitalize">{tier}</strong>
+          {tier === "free" && " (free)"}
+          {tier !== "free" && currentPrice && ` (paid, ${currentPrice.endsWith("yearly") ? "annual" : "monthly"})`}.
+          {sub.data?.cancel_at_period_end && sub.data.current_period_end && ` Cancelled — paid features end on ${new Date(sub.data.current_period_end).toLocaleDateString("en-GB")}.`}
+          {sub.data?.status === "past_due" && " Your last payment failed — please update your card."}
+        </p>
+      )}
       {session_id && tier === "free" && <p className="mb-6 text-sm">Confirming your payment…</p>}
       {polling && <p className="mb-6 text-sm">Updating your plan…</p>}
 
