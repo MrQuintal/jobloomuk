@@ -15,6 +15,7 @@ import { WEEKDAYS, isValidMessage } from "@/lib/rules/marketplace";
 import { ReportButton } from "@/components/app/ReportButton";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
 import { RatingBreakdown } from "@/components/app/StarRating";
+import { PhotoLightbox } from "@/components/app/PhotoLightbox";
 import defaultBanner from "@/assets/default-profile-banner.png";
 
 const proQ = (slug: string) => queryOptions({ queryKey: ["pro", slug], queryFn: () => getPro({ data: { slug } }) });
@@ -51,6 +52,7 @@ export const Route = createFileRoute("/pro/$slug")({
 function Pro() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(proQ(slug));
+  const [photo, setPhoto] = useState<{ images: string[]; title: string; start: number } | null>(null);
   if (!data) return null;
   const { pro, projects, slots, reviews, summary, team, bannerUrl, branches } = data;
   useEffect(() => { void supabase.from("profile_events").insert({ worker_id: pro.user_id, kind: "view" }); }, [pro.user_id]);
@@ -95,7 +97,11 @@ function Pro() {
                 <article key={p.id} className="rounded-2xl border border-border bg-card p-5">
                   {p.images.length > 0 && (
                     <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-3">
-                      {p.images.map((u) => <img key={u} src={u} alt={p.title} loading="lazy" className="aspect-[4/3] w-full rounded-lg object-cover" />)}
+                      {p.images.map((u, i) => (
+                        <button key={u} type="button" className="overflow-hidden rounded-lg" aria-label={`View larger photo from ${p.title}`} onClick={() => setPhoto({ images: p.images.filter((src): src is string => !!src), title: p.title, start: i })}>
+                          <img src={u} alt={p.title} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                        </button>
+                      ))}
                     </div>
                   )}
                   {p.video_url && videoEmbedUrl(p.video_url) && (
@@ -150,6 +156,7 @@ function Pro() {
           </div>
         </aside>
       </section>
+      {photo && <PhotoLightbox images={photo.images} title={photo.title} start={photo.start} onClose={() => setPhoto(null)} />}
     </PageShell>
   );
 }
