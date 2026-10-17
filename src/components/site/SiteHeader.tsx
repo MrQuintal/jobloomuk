@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { HeaderAvatar } from "@/components/app/HeaderAvatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "./Logo";
@@ -30,7 +31,10 @@ export function SiteHeader() {
         </nav>
         <div className="hidden items-center gap-2 md:flex">
           {ready && user ? (
-            <Button asChild variant="forest"><Link to="/dashboard">My dashboard</Link></Button>
+            <>
+              <HeaderAvatar />
+              <Button asChild variant="forest"><Link to="/dashboard">My dashboard</Link></Button>
+            </>
           ) : (
             <>
               <Button asChild variant="ghost"><Link to="/auth" search={{ mode: "signin" }}>Log in</Link></Button>
@@ -52,7 +56,10 @@ export function SiteHeader() {
             ))}
             <div className="mt-3 flex gap-2">
               {user ? (
-                <Button asChild variant="forest" className="flex-1"><Link to="/dashboard">My dashboard</Link></Button>
+                <>
+                  <HeaderAvatar />
+                  <Button asChild variant="forest" className="flex-1"><Link to="/dashboard">My dashboard</Link></Button>
+                </>
               ) : (
                 <>
                   <Button asChild variant="pill" className="flex-1"><Link to="/auth" search={{ mode: "signin" }}>Log in</Link></Button>
