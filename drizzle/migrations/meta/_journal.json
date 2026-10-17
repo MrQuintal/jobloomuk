@@ -183,6 +183,13 @@
       "when": 1792311600000,
       "tag": "0025_cancel_visits",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792315200000,
+      "tag": "0026_clear_finished_visits",
+      "breakpoints": true
     }
   ]
 }

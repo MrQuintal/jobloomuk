@@ -178,6 +178,7 @@ function Thread() {
                       <p className="font-medium">{new Date(b.starts_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</p>
                       {b.note && <p className="mt-1">{b.note}</p>}
                       <p className="mt-1 text-xs text-muted-foreground">{STATUS_LABEL[b.status as BookingStatus]}</p>
+                      {(b.status === "requested" || b.status === "accepted") && <Button size="sm" variant="outline" className="mt-2" onClick={() => decide(b.id, "cancelled")}>Cancel</Button>}
                     </li>
                   ))}
                 </ul>

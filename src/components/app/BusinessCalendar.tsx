@@ -151,7 +151,7 @@ export function BusinessCalendar({ uid }: { uid: string }) {
 
   return (
     <div className="grid gap-4">
-      <p className="text-sm text-muted-foreground">Click a day to see who is coming, write a note, and record the amount. Cancel on the day, on the appointment, or in Coming up. Both of you are notified. Jobloom does not collect the money.</p>
+      <p className="text-sm text-muted-foreground">Click a day to see who is coming, write a note, and record the amount. Cancel any visit, including one from a finished job. Both of you are notified. Jobloom does not collect the money.</p>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Button type="button" size="icon" variant="outline" aria-label="Previous month" onClick={() => shift(-1)}><ChevronLeft /></Button>
@@ -191,7 +191,7 @@ export function BusinessCalendar({ uid }: { uid: string }) {
                         <button type="button" className="block w-full truncate text-left" onClick={() => setSelected(key)}>
                           {new Date(visit.starts_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} {visit.customer}
                         </button>
-                        {visit.open && <button type="button" className="underline" aria-label={`Cancel ${visit.customer}`} onClick={() => void cancelVisit(visit)}>Cancel</button>}
+                        <button type="button" className="underline" aria-label={`Cancel ${visit.customer}`} onClick={() => void cancelVisit(visit)}>Cancel</button>
                       </li>
                     ))}
                   </ul>
@@ -218,7 +218,7 @@ export function BusinessCalendar({ uid }: { uid: string }) {
                 </div>
                 <div className="flex items-center gap-3">
                   <Link to="/messages/$id" params={{ id: visit.conversation_id }} className="underline">Open chat</Link>
-                  {visit.open && <button type="button" className="underline" aria-label={`Cancel ${visit.customer} on this day`} onClick={() => void cancelVisit(visit)}>Cancel</button>}
+                  <button type="button" className="underline" aria-label={`Cancel ${visit.customer} on this day`} onClick={() => void cancelVisit(visit)}>Cancel</button>
                 </div>
               </div>
               <Label className="mt-3 block" htmlFor={`note-${visit.id}`}>Note</Label>
@@ -298,7 +298,7 @@ export function BusinessCalendar({ uid }: { uid: string }) {
               <button type="button" className="underline" onClick={() => showDay(visitDayKey(visit.starts_at))}>
                 {new Date(visit.starts_at).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {visit.customer} · {visit.title}
               </button>
-              {visit.open && <button type="button" className="underline" aria-label={`Cancel ${visit.customer} coming up`} onClick={() => void cancelVisit(visit)}>Cancel</button>}
+              <button type="button" className="underline" aria-label={`Cancel ${visit.customer} coming up`} onClick={() => void cancelVisit(visit)}>Cancel</button>
             </li>
           ))}
         </ul>
