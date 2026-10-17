@@ -245,12 +245,13 @@ function Branding({ uid }: { uid: string }) {
   if (q.isLoading) return null;
   if (!q.data) return <p className="text-sm text-muted-foreground">Create your profile on <Link to="/worker" className="underline">My profile</Link> first.</p>;
   const current = q.data;
+  const bannerPath = current.banner_path;
   const refresh = () => void qc.invalidateQueries({ queryKey: ["branding"] });
   return (
     <div className="grid gap-4 text-sm">
       <div>
         <p className="font-medium">Profile banner</p>
-        <p className="text-muted-foreground">{current.banner_path ? "Banner is showing on your public profile." : "Wide photo shown across the top of your profile (recommended 1600 × 400 px, 4:1 aspect ratio, under 8 MB)."}</p>
+        <p className="text-muted-foreground">{bannerPath ? "Banner is showing on your public profile." : "Wide photo shown across the top of your profile (recommended 1600 × 400 px, 4:1 aspect ratio, under 8 MB)."}</p>
         <Input className="mt-2" type="file" accept="image/*" disabled={busy} onChange={async (e) => {
           const file = e.target.files?.[0];
           if (!file) return;
@@ -259,10 +260,24 @@ function Branding({ uid }: { uid: string }) {
           const path = `${uid}/banner-${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
           const up = await supabase.storage.from("portfolio").upload(path, file, { contentType: file.type });
           if (up.error) { setBusy(false); toast.error(up.error.message); return; }
-          if (current.banner_path) await supabase.storage.from("portfolio").remove([current.banner_path]);
-          await supabase.from("worker_profiles").update({ banner_path: path }).eq("user_id", uid);
-          setBusy(false); toast.success("Banner updated"); refresh();
+          if (bannerPath) await supabase.storage.from("portfolio").remove([bannerPath]);
+          const saved = await supabase.from("worker_profiles").update({ banner_path: path }).eq("user_id", uid);
+          setBusy(false);
+          if (saved.error) { toast.error(saved.error.message); return; }
+          toast.success("Banner updated"); refresh();
         }} />
+        {bannerPath && (
+          <Button type="button" variant="outline" className="mt-2" disabled={busy} onClick={async () => {
+            setBusy(true);
+            const cleared = await supabase.from("worker_profiles").update({ banner_path: null }).eq("user_id", uid);
+            if (cleared.error) { setBusy(false); toast.error(cleared.error.message); return; }
+            const removed = await supabase.storage.from("portfolio").remove([bannerPath]);
+            setBusy(false);
+            if (removed.error) toast.error("Banner removed from your profile, but the photo file could not be deleted.");
+            else toast.success("Banner removed");
+            refresh();
+          }}>Remove banner</Button>
+        )}
       </div>
       <label className="flex items-start gap-3">
         <input type="checkbox" className="mt-1" checked={current.is_sponsored} onChange={async (e) => {
