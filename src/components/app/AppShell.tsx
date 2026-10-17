@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, type ReactNode } from "react";
 import { toast } from "sonner";
 import { playChime, soundEnabled } from "@/lib/notify-sound";
-import { LayoutDashboard, Hammer, Users, ScrollText, LogOut, ClipboardList, Search, MessageSquare, Bell, ShieldCheck, Settings, UserCog, CreditCard, Sparkles } from "lucide-react";
+import { LayoutDashboard, Hammer, Users, ScrollText, LogOut, ClipboardList, MessageSquare, Bell, ShieldCheck, Settings, UserCog, CreditCard, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
@@ -32,7 +32,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const links = [
     roles.includes("customer") && { to: "/customer", label: "My jobs", icon: ClipboardList },
     roles.includes("worker") && { to: "/worker", label: "My business", icon: Hammer },
-    roles.includes("worker") && { to: "/jobs", label: "Find jobs", icon: Search },
     roles.includes("worker") && { to: "/tools", label: "Pro tools", icon: Sparkles },
     roles.includes("worker") && { to: "/billing", label: "Plan & billing", icon: CreditCard },
     (roles.includes("customer") || roles.includes("worker")) && { to: "/messages", label: "Messages", icon: MessageSquare },
@@ -42,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     (isAdmin(roles) || roles.includes("moderator")) && { to: "/admin/moderation", label: "Moderation", icon: ShieldCheck },
     isAdmin(roles) && { to: "/admin/users", label: "Users", icon: Users },
     isAdmin(roles) && { to: "/admin/audit", label: "Audit log", icon: ScrollText },
-  ].filter(Boolean) as { to: "/customer" | "/worker" | "/tools" | "/billing" | "/jobs" | "/messages" | "/notifications" | "/account" | "/admin/settings" | "/admin/moderation" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard; badge?: number }[];
+  ].filter(Boolean) as { to: "/customer" | "/worker" | "/tools" | "/billing" | "/messages" | "/notifications" | "/account" | "/admin/settings" | "/admin/moderation" | "/admin/users" | "/admin/audit"; label: string; icon: typeof LayoutDashboard; badge?: number }[];
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
