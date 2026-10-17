@@ -24,12 +24,12 @@ export function DeleteJobPostButton({ jobId, title }: { jobId: string; title: st
     setBusy(true);
     try {
       const { error } = await supabase.rpc("super_admin_delete_job", {
-        _job_id: jobId, _reason: reason.trim() || undefined,
+        _job_id: jobId, _reason: reason.trim(),
       });
       if (error) throw error;
       setOpen(false);
       setReason("");
-      await Promise.all(["open-jobs", "moderation-jobs", "my-jobs", "audit", "convs", "moderation"].map(
+      await Promise.all(["open-jobs", "moderation-jobs", "my-jobs", "audit", "inbox", "moderation"].map(
         (key) => qc.invalidateQueries({ queryKey: [key] }),
       ));
       toast.success("Job post deleted");
