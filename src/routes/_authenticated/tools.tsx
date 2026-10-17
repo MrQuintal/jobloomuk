@@ -14,6 +14,7 @@ import { useAuth } from "@/lib/auth";
 import { aiWrite } from "@/lib/ai.functions";
 import { conversionRate, LEAD_STAGES, tierAtLeast, type PlanTier } from "@/lib/rules/plans";
 import defaultBanner from "@/assets/default-profile-banner.png";
+import { BannerCropper } from "@/components/app/BannerCropper";
 
 export const Route = createFileRoute("/_authenticated/tools")({
   staticData: { sitemap: false },
@@ -243,6 +244,7 @@ function Branding({ uid }: { uid: string }) {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["branding", uid], queryFn: async () => (await supabase.from("worker_profiles").select("banner_path, is_sponsored").eq("user_id", uid).maybeSingle()).data });
   const [busy, setBusy] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   if (q.isLoading) return null;
   if (!q.data) return <p className="text-sm text-muted-foreground">Create your profile on <Link to="/worker" className="underline">My profile</Link> first.</p>;
   const current = q.data;
@@ -255,20 +257,28 @@ function Branding({ uid }: { uid: string }) {
         <p className="text-muted-foreground">{bannerPath ? "Your banner is showing on your public profile." : "The Jobloom banner is showing on your public profile until you upload your own (recommended 1600 × 400 px, 4:1 aspect ratio, under 8 MB)."}</p>
         {!bannerPath && <img src={defaultBanner} alt="Default Jobloom profile banner" className="mt-2 h-24 w-full rounded-lg object-cover" />}
         <a href={defaultBanner} download="jobloom-banner-template-1600x400.png" className="mt-2 inline-block text-xs text-muted-foreground underline">Template size download for sizing</a>
-        <Input className="mt-2" type="file" accept="image/*" disabled={busy} onChange={async (e) => {
+        <Input className="mt-2" type="file" accept="image/*" disabled={busy} onChange={(e) => {
           const file = e.target.files?.[0];
+          e.target.value = "";
           if (!file) return;
           if (!file.type.startsWith("image/") || file.size > 8 * 1024 * 1024) { toast.error("Banner must be an image under 8 MB"); return; }
-          setBusy(true);
-          const path = `${uid}/banner-${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
-          const up = await supabase.storage.from("portfolio").upload(path, file, { contentType: file.type });
-          if (up.error) { setBusy(false); toast.error(up.error.message); return; }
-          if (bannerPath) await supabase.storage.from("portfolio").remove([bannerPath]);
-          const saved = await supabase.from("worker_profiles").update({ banner_path: path }).eq("user_id", uid);
-          setBusy(false);
-          if (saved.error) { toast.error(saved.error.message); return; }
-          toast.success("Banner updated"); refresh();
+          setCropFile(file);
         }} />
+        {cropFile && (
+          <BannerCropper file={cropFile} busy={busy} onCancel={() => setCropFile(null)} onConfirm={async (blob) => {
+            setBusy(true);
+            const path = `${uid}/banner-${crypto.randomUUID()}.jpg`;
+            const up = await supabase.storage.from("portfolio").upload(path, blob, { contentType: "image/jpeg" });
+            if (up.error) { setBusy(false); toast.error(up.error.message); return; }
+            if (bannerPath) await supabase.storage.from("portfolio").remove([bannerPath]);
+            const saved = await supabase.from("worker_profiles").update({ banner_path: path }).eq("user_id", uid);
+            setBusy(false);
+            if (saved.error) { toast.error(saved.error.message); return; }
+            setCropFile(null);
+            toast.success("Banner updated");
+            refresh();
+          }} />
+        )}
         {bannerPath && (
           <Button type="button" variant="outline" className="mt-2" disabled={busy} onClick={async () => {
             setBusy(true);
