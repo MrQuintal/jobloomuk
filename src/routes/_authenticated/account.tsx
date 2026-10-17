@@ -9,28 +9,24 @@ import { PageTitle } from "@/components/app/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { UserAvatar, useAvatars } from "@/components/app/UserAvatar";
-import { BannerCropper } from "@/components/app/BannerCropper";
-import { profilePhotoSourceProblem } from "@/lib/profile-photo";
+import { profilePhotoSourceProblem, profilePhotoToStore } from "@/lib/profile-photo";
 
 function PhotoSection({ uid, name }: { uid: string; name: string }) {
   const qc = useQueryClient();
   const av = useAvatars([uid]);
   const [busy, setBusy] = useState(false);
-  const [cropFile, setCropFile] = useState<File | null>(null);
-  function choose(file: File) {
+  async function upload(file: File) {
     const problem = profilePhotoSourceProblem(file);
     if (problem) { toast.error(problem); return; }
-    setCropFile(file);
-  }
-  async function upload(blob: Blob) {
     setBusy(true);
-    const path = `${uid}/${Date.now()}.jpg`;
-    const up = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+    const stored = await profilePhotoToStore(file);
+    if (!stored) { toast.error("This photo can't be opened here. Save it as a JPEG and try again."); setBusy(false); return; }
+    const path = `${uid}/${Date.now()}.${stored.ext}`;
+    const up = await supabase.storage.from("avatars").upload(path, stored.body, { upsert: true, contentType: stored.contentType });
     if (up.error) { toast.error(up.error.message); setBusy(false); return; }
     const { error } = await supabase.from("profiles").update({ avatar_url: path }).eq("id", uid);
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    setCropFile(null);
     toast.success("Profile photo updated");
     qc.invalidateQueries({ queryKey: ["avatars"] });
   }
@@ -45,25 +41,11 @@ function PhotoSection({ uid, name }: { uid: string; name: string }) {
       <div className="mt-4 flex items-center gap-4">
         <UserAvatar url={av[uid]} name={name} className="h-20 w-20" />
         <label className="cursor-pointer">
-          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onClick={(e) => { e.currentTarget.value = ""; }} onChange={(e) => { const f = e.target.files?.[0]; if (f) choose(f); }} />
+          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onClick={(e) => { e.currentTarget.value = ""; }} onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); }} />
           <span className="inline-flex h-9 items-center rounded-md border border-input px-4 text-sm hover:bg-accent">{busy ? "Uploading…" : "Upload photo"}</span>
         </label>
         {av[uid] && <Button variant="ghost" size="sm" onClick={remove}>Remove</Button>}
       </div>
-      {cropFile && (
-        <BannerCropper
-          file={cropFile}
-          busy={busy}
-          outputWidth={800}
-          outputHeight={800}
-          maxBytes={5 * 1024 * 1024}
-          hint="Drag the photo and use the slider. Zoom out to fit the whole photo. The saved photo is square."
-          frameClassName="aspect-square w-full max-w-72 rounded-full"
-          alt="Profile photo crop preview"
-          onCancel={() => setCropFile(null)}
-          onConfirm={(blob) => void upload(blob)}
-        />
-      )}
     </section>
   );
 }
