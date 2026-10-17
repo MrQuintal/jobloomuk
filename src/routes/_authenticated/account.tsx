@@ -45,7 +45,7 @@ function PhotoSection({ uid, name }: { uid: string; name: string }) {
       <div className="mt-4 flex items-center gap-4">
         <UserAvatar url={av[uid]} name={name} className="h-20 w-20" />
         <label className="cursor-pointer">
-          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) choose(f); e.target.value = ""; }} />
+          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onClick={(e) => { e.currentTarget.value = ""; }} onChange={(e) => { const f = e.target.files?.[0]; if (f) choose(f); }} />
           <span className="inline-flex h-9 items-center rounded-md border border-input px-4 text-sm hover:bg-accent">{busy ? "Uploading…" : "Upload photo"}</span>
         </label>
         {av[uid] && <Button variant="ghost" size="sm" onClick={remove}>Remove</Button>}

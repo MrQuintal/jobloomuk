@@ -31,6 +31,8 @@ export function BannerCropper({
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const placed = useRef(false);
   const listening = useRef(true);
+  const retried = useRef(false);
+  const errorTimer = useRef<number | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [frame, setFrame] = useState({ w: 0, h: 0 });
@@ -40,12 +42,15 @@ export function BannerCropper({
   useEffect(() => {
     const next = URL.createObjectURL(file);
     listening.current = true;
+    retried.current = false;
     setUrl(next);
     setZoom(1);
     setNatural(null);
     placed.current = false;
     return () => {
       listening.current = false;
+      if (errorTimer.current != null) window.clearTimeout(errorTimer.current);
+      errorTimer.current = null;
       URL.revokeObjectURL(next);
     };
   }, [file]);
@@ -145,16 +150,34 @@ export function BannerCropper({
             alt={alt}
             draggable={false}
             onLoad={(e) => {
+              if (errorTimer.current != null) window.clearTimeout(errorTimer.current);
+              errorTimer.current = null;
               imageRef.current = e.currentTarget;
-              setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight });
+              if (e.currentTarget.naturalWidth > 0) setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight });
             }}
-            onError={() => {
+            onError={(e) => {
               if (!listening.current) return;
-              toast.error("This photo can't be opened here. Save it as a JPEG and try again.");
-              onCancel();
+              if (!retried.current && url) {
+                retried.current = true;
+                e.currentTarget.src = "";
+                e.currentTarget.src = url;
+                return;
+              }
+              if (errorTimer.current != null) window.clearTimeout(errorTimer.current);
+              errorTimer.current = window.setTimeout(() => {
+                errorTimer.current = null;
+                if (!listening.current) return;
+                const img = imageRef.current;
+                if (img && img.naturalWidth > 0) {
+                  setNatural({ w: img.naturalWidth, h: img.naturalHeight });
+                  return;
+                }
+                toast.error("This photo can't be opened here. Save it as a JPEG and try again.");
+                onCancel();
+              }, 700);
             }}
             className="absolute max-w-none select-none"
-            style={shown ? { width: shown.width, height: shown.height, left: offset.x, top: offset.y } : { visibility: "hidden" }}
+            style={shown ? { width: shown.width, height: shown.height, left: offset.x, top: offset.y, opacity: 1 } : { width: "100%", height: "100%", objectFit: "cover", opacity: 0 }}
           />
         )}
       </div>

@@ -20,12 +20,14 @@ export function HeaderAvatar() {
   });
   const [busy, setBusy] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
+  const chosenAt = useRef(0);
   if (!user) return null;
   const name = nameQ.data || user.email || "You";
 
   function choose(file: File) {
     const problem = profilePhotoSourceProblem(file);
     if (problem) { toast.error(problem); return; }
+    chosenAt.current = Date.now();
     setCropFile(file);
   }
 
@@ -44,12 +46,12 @@ export function HeaderAvatar() {
 
   return (
     <>
-      <button type="button" aria-label="Update profile photo" className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" disabled={busy} onClick={() => inputRef.current?.click()}>
+      <button type="button" aria-label="Update profile photo" className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" disabled={busy} onClick={() => { if (inputRef.current) inputRef.current.value = ""; inputRef.current?.click(); }}>
         <UserAvatar url={av[user.id]} name={name} className="h-9 w-9" />
       </button>
-      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) choose(file); e.target.value = ""; }} />
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onChange={(e) => { const file = e.target.files?.[0]; if (file) choose(file); }} />
       <Dialog open={!!cropFile} onOpenChange={(open) => { if (!open && !busy) setCropFile(null); }}>
-        <DialogContent>
+        <DialogContent onInteractOutside={(e) => { if (Date.now() - chosenAt.current < 800) e.preventDefault(); }}>
           <DialogHeader>
             <DialogTitle>Update profile photo</DialogTitle>
           </DialogHeader>
