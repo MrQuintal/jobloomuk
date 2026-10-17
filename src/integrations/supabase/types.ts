@@ -145,16 +145,19 @@ export type Database = {
         Row: {
           granted_at: string
           granted_by: string
+          tier: string
           user_id: string
         }
         Insert: {
           granted_at?: string
           granted_by: string
+          tier?: string
           user_id: string
         }
         Update: {
           granted_at?: string
           granted_by?: string
+          tier?: string
           user_id?: string
         }
         Relationships: [
@@ -1016,6 +1019,10 @@ export type Database = {
       }
       admin_set_business_access: {
         Args: { _grant: boolean; _user_id: string }
+        Returns: undefined
+      }
+      admin_set_complimentary_tier: {
+        Args: { _tier: string; _user_id: string }
         Returns: undefined
       }
       admin_set_role: {
